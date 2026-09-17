@@ -1,0 +1,6 @@
+.DS_Store
+*.idef0.json.bak
+
+# macOS package build output
+macos/.build/
+macos/build/

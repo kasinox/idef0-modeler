@@ -1,0 +1,189 @@
+:root{
+  --bg:#eceef1; --panel:#f8f9fa; --panel-2:#ffffff; --line:#c9ced6; --line-soft:#e2e6eb;
+  --ink:#1c2024; --ink-soft:#5b6470; --accent:#1f5fa9; --accent-soft:#dbe8f7;
+  --err:#b3261e; --warn:#9a6700; --ok:#1a7f37;
+  --sheet:#ffffff; --sheet-ink:#111418; --box:#ffffff;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:13px/1.45 var(--font);color:var(--ink);background:var(--bg);overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+#app{height:100vh;display:flex;flex-direction:column}
+
+/* ---------- toolbar ---------- */
+#toolbar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--panel);
+  border-bottom:1px solid var(--line);flex:0 0 auto;flex-wrap:wrap}
+#toolbar .brand{font-weight:700;letter-spacing:.04em;margin-right:8px;white-space:nowrap}
+#toolbar .brand small{font-weight:400;color:var(--ink-soft);letter-spacing:0}
+.tb-sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+.btn{border:1px solid var(--line);background:var(--panel-2);border-radius:5px;padding:4px 9px;cursor:pointer;
+  white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.btn:hover:not(:disabled){background:var(--accent-soft);border-color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger:hover{background:#fbe3e1;border-color:var(--err);color:var(--err)}
+.menu{position:relative}
+.menu-pop{position:absolute;top:calc(100% + 4px);left:0;z-index:40;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.16);min-width:220px;padding:4px}
+.menu-pop button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 10px;border-radius:4px;cursor:pointer}
+.menu-pop button:hover{background:var(--accent-soft)}
+.menu-pop hr{border:0;border-top:1px solid var(--line-soft);margin:4px 2px}
+.menu-pop .mnote{padding:4px 10px;color:var(--ink-soft);font-size:11px}
+
+/* ---------- layout ---------- */
+#body{flex:1;display:flex;min-height:0}
+#left,#right{display:flex;flex-direction:column;background:var(--panel);min-width:0}
+#left{flex:0 0 250px;border-right:1px solid var(--line)}
+#right{flex:0 0 290px;border-left:1px solid var(--line)}
+body.hide-left #left,body.hide-right #right{display:none}
+@media (max-width:1180px){#left{flex-basis:206px}#right{flex-basis:238px}}
+@media (max-width:920px){#left{flex-basis:176px}#right{flex-basis:200px}}
+#center{flex:1;display:flex;flex-direction:column;min-width:0}
+.panel-tabs{display:flex;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto}
+.panel-tabs .tab{flex:1;border:0;background:none;padding:7px 4px;cursor:pointer;color:var(--ink-soft);
+  border-bottom:2px solid transparent;font-size:12px}
+.panel-tabs .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.panel-body{flex:1;overflow:auto;min-height:0}
+.tabpane{display:none;padding:10px}
+.tabpane.active{display:block}
+
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:
+  repeating-conic-gradient(#e6e9ed 0% 25%, #eceef1 0% 50%) 50%/18px 18px}
+#canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#statusbar{flex:0 0 auto;display:flex;gap:14px;align-items:center;padding:4px 10px;background:var(--panel);
+  border-top:1px solid var(--line);color:var(--ink-soft);font-size:11.5px;white-space:nowrap;overflow:hidden}
+#statusbar b{color:var(--ink);font-weight:600}
+
+#inline-editor{position:absolute;z-index:20}
+#inline-editor input{width:100%;height:100%;text-align:center;border:2px solid var(--accent);
+  border-radius:2px;padding:2px 4px;background:#fff;outline:none}
+
+/* ---------- forms ---------- */
+.field{margin-bottom:9px}
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:3px}
+.field input[type=text],.field input[type=number],.field select,.field textarea{
+  width:100%;padding:5px 7px;border:1px solid var(--line);border-radius:4px;background:var(--panel-2)}
+.field textarea{resize:vertical;min-height:52px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.row{display:flex;gap:8px}
+.row>*{flex:1;min-width:0}
+.checkline{display:flex;align-items:center;gap:6px;margin:5px 0}
+.checkline input{margin:0}
+h3.sect{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);
+  margin:14px 0 7px;padding-bottom:4px;border-bottom:1px solid var(--line-soft)}
+h3.sect:first-child{margin-top:0}
+.empty{color:var(--ink-soft);font-style:italic;padding:6px 2px}
+.kv{display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:12px}
+.kv span:first-child{color:var(--ink-soft)}
+.mono{font-family:var(--mono);font-size:11.5px}
+
+/* ---------- node tree ---------- */
+.tree ul{list-style:none;margin:0;padding-left:14px}
+.tree>ul{padding-left:0}
+.tree li{margin:1px 0}
+.tree .node{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:4px;cursor:pointer}
+.tree .node:hover{background:var(--accent-soft)}
+.tree .node.current{background:var(--accent);color:#fff}
+.tree .node.current .nn{color:#cfe1f7}
+.tree .nn{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:700;flex:0 0 auto}
+.tree .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree .leaf{color:var(--ink-soft)}
+
+/* ---------- checks ---------- */
+.issue{border-left:3px solid var(--line);padding:6px 8px;margin-bottom:6px;background:var(--panel-2);
+  border-radius:0 4px 4px 0;cursor:pointer}
+.issue:hover{background:var(--accent-soft)}
+.issue.error{border-left-color:var(--err)}
+.issue.warning{border-left-color:var(--warn)}
+.issue .where{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em}
+.issue .msg{margin-top:2px}
+.badge{display:inline-block;min-width:16px;padding:0 5px;border-radius:8px;background:var(--line);
+  color:var(--ink);font-size:10px;line-height:15px;text-align:center}
+.badge.error{background:var(--err);color:#fff}
+.badge.warning{background:var(--warn);color:#fff}
+.badge.ok{background:var(--ok);color:#fff}
+
+/* ---------- glossary ---------- */
+.gl-item{border:1px solid var(--line-soft);border-radius:5px;padding:7px;margin-bottom:7px;background:var(--panel-2)}
+.gl-item .t{font-weight:600;display:flex;justify-content:space-between;gap:6px}
+.gl-item .d{color:var(--ink-soft);margin-top:3px;white-space:pre-wrap}
+.xbtn{border:0;background:none;cursor:pointer;color:var(--ink-soft);padding:0 3px;line-height:1}
+.xbtn:hover{color:var(--err)}
+
+/* ---------- modal ---------- */
+.modal-back{position:fixed;inset:0;background:rgba(15,20,28,.42);display:flex;align-items:center;
+  justify-content:center;z-index:100}
+.modal{background:var(--panel-2);border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  width:min(560px,92vw);max-height:86vh;display:flex;flex-direction:column}
+.modal h2{margin:0;padding:14px 16px;font-size:15px;border-bottom:1px solid var(--line)}
+.modal .mbody{padding:16px;overflow:auto}
+.modal .mfoot{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.modal pre{background:var(--bg);border:1px solid var(--line-soft);border-radius:5px;padding:10px;
+  overflow:auto;max-height:46vh;font-family:var(--mono);font-size:11.5px;white-space:pre;margin:0}
+
+/* ---------- svg sheet ---------- */
+/* Any stylesheet rule beats an SVG presentation attribute, so the sheet rules
+   must stay weaker than the element classes (.icom, .frm-lbl, .box-node,
+   .arr-lbl.sel …): `:where(#canvas)` keeps this at element specificity. What
+   render.js sets per element and must win over a class (the status fill, the
+   "(unnamed)" placeholder) it writes as an inline style, not an attribute. */
+#canvas .sheet-bg{fill:var(--sheet);stroke:none}
+:where(#canvas) text{font-family:var(--font);fill:var(--sheet-ink)}
+.frm{fill:none;stroke:var(--sheet-ink);stroke-width:1.4}
+.frm-thin{fill:none;stroke:var(--sheet-ink);stroke-width:.8}
+.frm-mark{fill:var(--sheet)}
+.frm-mark.on{fill:var(--sheet-ink)}
+.frm-thumb{fill:var(--sheet);stroke:var(--sheet-ink);stroke-width:.8}
+.frm-thumb.cur{fill:var(--sheet-ink)}
+.frm-lbl{font-size:8px;fill:var(--ink-soft);letter-spacing:.04em}
+.frm-val{font-size:10.5px;fill:var(--sheet-ink)}
+.frm-val.big{font-size:13px;font-weight:600}
+.frm-note{font-size:10.5px;fill:var(--sheet-ink);pointer-events:none}
+/* The box itself stays FIPS white on screen, exactly as it prints, so its
+   interior text is always dark ink — not the sheet's own themed ink, which
+   is meant for the (themeable) sheet background around it. */
+/* On screen the box follows the sheet's theme (--box sits a step above
+   --sheet so it still reads as a solid object); exports keep FIPS white/black
+   through render.js's EXPORT_CSS, which never reads these tokens. The kit
+   mapping lives here as well as in the adapter so a stale cached adapter can
+   never leave a white box with light text on a dark sheet. */
+html[data-sc]{--box:var(--sc-panel-2,#111c27)}
+.box-shape{fill:var(--box);stroke:var(--sheet-ink);stroke-width:1.6}
+.box-shape.sel{stroke:var(--accent);stroke-width:2.6}
+.box-name{font-size:13px;text-anchor:middle;dominant-baseline:middle;pointer-events:none;fill:var(--sheet-ink)}
+.box-num{font-size:10px;text-anchor:end;pointer-events:none;fill:var(--sheet-ink)}
+.box-node{font-size:9px;text-anchor:start;fill:var(--ink-soft);pointer-events:none}
+.arr{fill:none;stroke:var(--sheet-ink);stroke-width:1.4;stroke-linejoin:round}
+.gl-use{margin-left:auto;font-size:11px;color:var(--ink-soft);white-space:nowrap}
+.gl-item .d{display:flex;align-items:center;gap:8px}
+.gl-occ{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.occ{font:500 10.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;padding:1px 6px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink-soft);cursor:pointer;border-radius:2px}
+.occ:hover{border-color:var(--accent);color:var(--accent)}
+.arr.sel{stroke:var(--accent);stroke-width:2.4}
+.arr-hit{fill:none;stroke:transparent;stroke-width:12;cursor:pointer}
+.arr-head{fill:var(--sheet-ink);stroke:none}
+.arr-head.sel{fill:var(--accent)}
+.arr-lbl{font-size:10.5px;dominant-baseline:middle;paint-order:stroke;
+  stroke:var(--sheet);stroke-width:3.5;stroke-linejoin:round;pointer-events:none}
+.arr-lbl.sel{fill:var(--accent)}
+.squiggle{fill:none;stroke:var(--sheet-ink);stroke-width:0.9;stroke-linejoin:round;pointer-events:none}
+.squiggle.sel{stroke:var(--accent)}
+.icom{font-size:9px;font-family:var(--mono);fill:var(--accent);font-weight:700}
+.tunnel{fill:none;stroke:var(--sheet-ink);stroke-width:1.4}
+/* A port (S01): a parent concept not yet connected on this diagram, at the
+   sheet edge. Sheet ink, like an arrow, since it sits on the (themeable)
+   sheet and not inside a box; the stub and circle keep their pointer events
+   so a press can start an arrow from the port, the texts take none. */
+.port-stub{fill:none;stroke:var(--ink-soft);stroke-width:1.2;stroke-dasharray:4 3}
+.port-dot{fill:var(--sheet);stroke:var(--sheet-ink);stroke-width:1.4;cursor:crosshair}
+.port-lbl{font-size:10.5px;fill:var(--ink-soft);font-style:italic;dominant-baseline:middle}
+.port text{pointer-events:none}
+.anchor{fill:#fff;stroke:var(--accent);stroke-width:1.4;cursor:crosshair}
+.anchor:hover,.anchor.hot{fill:var(--accent)}
+.handle{fill:#fff;stroke:var(--accent);stroke-width:1.4;cursor:nwse-resize}
+.ghost{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:5 4;pointer-events:none}
+.bendh{fill:var(--accent);opacity:.8;cursor:move}
+.dropzone{fill:var(--accent);opacity:.08;stroke:var(--accent);stroke-dasharray:6 4;stroke-width:1.2}

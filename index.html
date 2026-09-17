@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IDEF0 Modeler</title>
+<link rel="stylesheet" href="ui-kit/css/kit.css">
+<link rel="stylesheet" href="ui-kit/adapters/idef0.css">
+<link rel="stylesheet" href="src/styles.css">
+<!-- Applied before first paint so the page never flashes unthemed. -->
+<script type="module">
+  import { initTheme } from './ui-kit/js/theme.js';
+  initTheme({ app: 'idef0' });
+</script>
+<script type="module" src="ui-kit/js/theme-picker.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header id="toolbar"></header>
+    <div id="body">
+      <aside id="left">
+        <div class="panel-tabs" data-group="left">
+          <button class="tab active" data-tab="tree">Node Tree</button>
+          <button class="tab" data-tab="modelprops">Model</button>
+          <button class="tab" data-tab="glossary">Glossary</button>
+        </div>
+        <div class="panel-body">
+          <section id="tree" class="tabpane active"></section>
+          <section id="modelprops" class="tabpane"></section>
+          <section id="glossary" class="tabpane"></section>
+        </div>
+      </aside>
+      <main id="center">
+        <div id="canvas-wrap">
+          <svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div id="inline-editor" hidden><input type="text" spellcheck="false"></div>
+        </div>
+        <div id="statusbar"></div>
+      </main>
+      <aside id="right">
+        <div class="panel-tabs" data-group="right">
+          <button class="tab active" data-tab="props">Properties</button>
+          <button class="tab" data-tab="checks">Checks <span id="checkcount" class="badge"></span></button>
+        </div>
+        <div class="panel-body">
+          <section id="props" class="tabpane active"></section>
+          <section id="checks" class="tabpane"></section>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div id="modal-root"></div>
+  <input type="file" id="file-input" accept=".idef0.json,.json,.xml" hidden>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

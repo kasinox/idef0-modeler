@@ -1,0 +1,1632 @@
+[
+  {
+    "name": "baseline",
+    "ops": []
+  },
+  {
+    "name": "ctx-tunnel",
+    "ops": [
+      {
+        "op": "setArrow",
+        "diagram": "A-0",
+        "index": 0,
+        "field": "tunnelFrom",
+        "value": true
+      }
+    ]
+  },
+  {
+    "name": "box-number-range",
+    "ops": [
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "index": 0,
+        "field": "number",
+        "value": 9
+      }
+    ]
+  },
+  {
+    "name": "box-number-order-resize",
+    "ops": [
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "x",
+        "value": 20
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "y",
+        "value": 20
+      }
+    ]
+  },
+  {
+    "name": "box-number-order-import",
+    "ops": [
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "field": "number",
+        "value": 4
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "number",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "name": "relabel",
+    "ops": [
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Customer Order",
+        "field": "label",
+        "value": "Customer Records"
+      }
+    ]
+  },
+  {
+    "name": "orphan",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxorphan",
+        "label": "Mystery Input",
+        "from": {
+          "type": "boundary",
+          "side": "left",
+          "pos": 0.95
+        },
+        "to": {
+          "type": "box",
+          "box": "Plan Production",
+          "side": "left",
+          "pos": 0.9
+        }
+      }
+    ]
+  },
+  {
+    "name": "missing",
+    "ops": [
+      {
+        "op": "removeArrow",
+        "diagram": "A0",
+        "label": "Quality Standards"
+      }
+    ]
+  },
+  {
+    "name": "swap-controls",
+    "ops": [
+      {
+        "op": "swapPos",
+        "diagram": "A-0",
+        "labels": [
+          "Production Schedule",
+          "Quality Standards"
+        ],
+        "end": "to"
+      }
+    ]
+  },
+  {
+    "name": "feedback",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxfb1",
+        "label": "Rework",
+        "from": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "right",
+          "pos": 0.2
+        },
+        "to": {
+          "type": "box",
+          "box": "Plan Production",
+          "side": "left",
+          "pos": 0.8
+        }
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxfb2",
+        "label": "Defect Report",
+        "from": {
+          "type": "box",
+          "box": "Assemble Product",
+          "side": "right",
+          "pos": 0.2
+        },
+        "to": {
+          "type": "box",
+          "box": "Fabricate Components",
+          "side": "top",
+          "pos": 0.6
+        }
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxfb3",
+        "label": "Returned Tooling",
+        "from": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "right",
+          "pos": 0.1
+        },
+        "to": {
+          "type": "box",
+          "box": "Fabricate Components",
+          "side": "bottom",
+          "pos": 0.8
+        }
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxbent",
+        "label": "Pinned",
+        "from": {
+          "type": "box",
+          "box": "Plan Production",
+          "side": "right",
+          "pos": 0.3
+        },
+        "to": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "left",
+          "pos": 0.3
+        },
+        "bend": 640
+      }
+    ]
+  },
+  {
+    "name": "tunnelled-boundary",
+    "ops": [
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Raw Materials",
+        "field": "tunnelFrom",
+        "value": true
+      }
+    ]
+  },
+  {
+    "name": "seven-boxes",
+    "ops": [
+      {
+        "op": "pushBox",
+        "diagram": "A0",
+        "id": "bx_fx5",
+        "name": "Inspect Parts",
+        "number": 5,
+        "x": 820,
+        "y": 170,
+        "w": 150,
+        "h": 90
+      },
+      {
+        "op": "pushBox",
+        "diagram": "A0",
+        "id": "bx_fx6",
+        "name": "Store Stock",
+        "number": 6,
+        "x": 110,
+        "y": 560,
+        "w": 150,
+        "h": 90
+      },
+      {
+        "op": "pushBox",
+        "diagram": "A0",
+        "id": "bx_fx7",
+        "name": "Scrap Waste",
+        "number": 7,
+        "x": 620,
+        "y": 600,
+        "w": 150,
+        "h": 90
+      },
+      {
+        "op": "renumberBoxes",
+        "diagram": "A0"
+      },
+      {
+        "op": "renumberNodes"
+      }
+    ]
+  },
+  {
+    "name": "unnamed-and-verb",
+    "ops": [
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "name",
+        "value": "The Shipping"
+      },
+      {
+        "op": "pushBox",
+        "diagram": "A0",
+        "id": "bx_fxunnamed",
+        "name": "",
+        "number": 5,
+        "x": 700,
+        "y": 150,
+        "w": 120,
+        "h": 80
+      }
+    ]
+  },
+  {
+    "name": "decompose",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      },
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Fabricate Components",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "name": "rename-merge",
+    "ops": [
+      {
+        "op": "renameConcept",
+        "from": "Work Order",
+        "to": "Job Ticket"
+      },
+      {
+        "op": "renameConcept",
+        "from": "Components",
+        "to": "Assembled Product"
+      }
+    ]
+  },
+  {
+    "name": "merge-keeps-definition",
+    "ops": [
+      {
+        "op": "renameConcept",
+        "from": "Work Order",
+        "to": "Components"
+      }
+    ]
+  },
+  {
+    "name": "unbound",
+    "ops": [
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Components",
+        "field": "conceptId",
+        "value": "gl_doesnotexist"
+      }
+    ]
+  },
+  {
+    "name": "relabel-keeps-concept-on-drift",
+    "ops": [
+      {
+        "op": "relabelArrow",
+        "diagram": "A0",
+        "label": "Raw Materials",
+        "value": "Raw Materials (Steel Stock)"
+      }
+    ]
+  },
+  {
+    "name": "relabel-rename-in-place",
+    "ops": [
+      {
+        "op": "relabelBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "value": "Ship Products"
+      },
+      {
+        "op": "relabelBox",
+        "diagram": "A0",
+        "name": "Ship Products",
+        "value": "Plan Production"
+      }
+    ]
+  },
+  {
+    "name": "icom-concept-mismatch",
+    "ops": [
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Customer Order",
+        "field": "conceptId",
+        "value": "gl2"
+      }
+    ]
+  },
+  {
+    "name": "orphan-restore",
+    "ops": [
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "name",
+        "value": "Package Product"
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Package Product",
+        "field": "conceptId",
+        "value": "ext_ontology_1"
+      },
+      {
+        "op": "bindAll"
+      }
+    ]
+  },
+  {
+    "name": "orphan-collision",
+    "ops": [
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Components",
+        "field": "conceptId",
+        "value": "ext_ontology_2"
+      },
+      {
+        "op": "bindAll"
+      }
+    ]
+  },
+  {
+    "name": "remove-box",
+    "ops": [
+      {
+        "op": "removeBox",
+        "diagram": "A0",
+        "name": "Assemble Product"
+      }
+    ]
+  },
+  {
+    "name": "add-box",
+    "ops": [
+      {
+        "op": "addBox",
+        "diagram": "A0"
+      },
+      {
+        "op": "addBox",
+        "diagram": "A0"
+      }
+    ]
+  },
+  {
+    "name": "call-seeded",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxcall",
+        "label": "OTHER/A22",
+        "from": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "bottom",
+          "pos": 0.5
+        },
+        "to": {
+          "type": "boundary",
+          "side": "bottom",
+          "pos": 0.8
+        }
+      }
+    ]
+  },
+  {
+    "name": "call-no-mechanism",
+    "ops": [
+      {
+        "op": "removeArrow",
+        "diagram": "A-0",
+        "label": "Plant Equipment"
+      },
+      {
+        "op": "removeArrow",
+        "diagram": "A-0",
+        "label": "Production Staff"
+      },
+      {
+        "op": "removeArrow",
+        "diagram": "A0",
+        "label": "Plant Equipment"
+      },
+      {
+        "op": "removeArrow",
+        "diagram": "A0",
+        "label": "Production Staff"
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxcall",
+        "label": "OTHER/A22",
+        "from": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "bottom",
+          "pos": 0.5
+        },
+        "to": {
+          "type": "boundary",
+          "side": "bottom",
+          "pos": 0.8
+        }
+      }
+    ]
+  },
+  {
+    "name": "call-left-of-mechanism",
+    "ops": [
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Plant Equipment",
+        "field": "conceptId",
+        "value": null
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Plant Equipment",
+        "field": "label",
+        "value": "Machine Tools"
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxcall",
+        "label": "SUPPLIER/A2",
+        "from": {
+          "type": "box",
+          "box": "Plan Production",
+          "side": "bottom",
+          "pos": 0.5
+        },
+        "to": {
+          "type": "boundary",
+          "side": "bottom",
+          "pos": 0.2
+        }
+      }
+    ]
+  },
+  {
+    "name": "tunnel-at-box",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxtun",
+        "label": "Tooling Plan",
+        "from": {
+          "type": "box",
+          "box": "Plan Production",
+          "side": "right",
+          "pos": 0.6
+        },
+        "to": {
+          "type": "box",
+          "box": "Fabricate Components",
+          "side": "top",
+          "pos": 0.5
+        }
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Tooling Plan",
+        "field": "tunnelTo",
+        "value": true
+      },
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Fabricate Components",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "name": "reversed-boundary",
+    "ops": [
+      {
+        "op": "setEnd",
+        "diagram": "A0",
+        "label": "Raw Materials",
+        "end": "from",
+        "value": {
+          "type": "box",
+          "box": "Fabricate Components",
+          "side": "right",
+          "pos": 0.3
+        }
+      },
+      {
+        "op": "setEnd",
+        "diagram": "A0",
+        "label": "Raw Materials",
+        "end": "to",
+        "value": {
+          "type": "boundary",
+          "side": "left",
+          "pos": 0.45
+        }
+      },
+      {
+        "op": "setEnd",
+        "diagram": "A0",
+        "label": "Shipping Notice",
+        "end": "from",
+        "value": {
+          "type": "boundary",
+          "side": "right",
+          "pos": 0.88
+        }
+      },
+      {
+        "op": "setEnd",
+        "diagram": "A0",
+        "label": "Shipping Notice",
+        "end": "to",
+        "value": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "left",
+          "pos": 0.7
+        }
+      }
+    ]
+  },
+  {
+    "name": "two-calls",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxcall1",
+        "label": "SUPPLIER/A23.2",
+        "from": {
+          "type": "box",
+          "box": "Assemble Product",
+          "side": "bottom",
+          "pos": 0.3
+        },
+        "to": {
+          "type": "boundary",
+          "side": "bottom",
+          "pos": 0.5
+        }
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxcall2",
+        "label": "VENDOR/A4.1",
+        "from": {
+          "type": "box",
+          "box": "Assemble Product",
+          "side": "bottom",
+          "pos": 0.7
+        },
+        "to": {
+          "type": "boundary",
+          "side": "bottom",
+          "pos": 0.55
+        }
+      }
+    ]
+  },
+  {
+    "name": "call-into-box",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxcall",
+        "label": "Scrap",
+        "from": {
+          "type": "box",
+          "box": "Fabricate Components",
+          "side": "bottom",
+          "pos": 0.8
+        },
+        "to": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "left",
+          "pos": 0.7
+        }
+      }
+    ]
+  },
+  {
+    "name": "call-decomposed",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxcall",
+        "label": "OTHER/A3",
+        "from": {
+          "type": "box",
+          "box": "Plan Production",
+          "side": "bottom",
+          "pos": 0.5
+        },
+        "to": {
+          "type": "boundary",
+          "side": "bottom",
+          "pos": 0.15
+        }
+      },
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "name": "reserved-terms",
+    "ops": [
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "name",
+        "value": "Process"
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Assemble Product",
+        "field": "name",
+        "value": "Activity"
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Fabricate Components",
+        "field": "name",
+        "value": "Process Control"
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Components",
+        "field": "label",
+        "value": "Output"
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Assembled Product",
+        "field": "label",
+        "value": "CALL"
+      }
+    ]
+  },
+  {
+    "name": "fork-join",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxfork",
+        "label": "Order Copy",
+        "from": {
+          "type": "boundary",
+          "side": "left",
+          "pos": 0.3
+        },
+        "to": {
+          "type": "box",
+          "box": "Fabricate Components",
+          "side": "left",
+          "pos": 0.25
+        }
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Order Copy",
+        "field": "conceptId",
+        "value": "gl1"
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Order Copy",
+        "field": "label",
+        "value": "Customer Order"
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A-0",
+        "id": "ar_fxqs",
+        "label": "Standards Copy",
+        "from": {
+          "type": "boundary",
+          "side": "top",
+          "pos": 0.85
+        },
+        "to": {
+          "type": "box",
+          "box": "Manufacture Product",
+          "side": "top",
+          "pos": 0.88
+        }
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A-0",
+        "label": "Standards Copy",
+        "field": "conceptId",
+        "value": "gl3"
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A-0",
+        "label": "Standards Copy",
+        "field": "label",
+        "value": "Quality Standards"
+      }
+    ]
+  },
+  {
+    "name": "fork-join-drawn",
+    "ops": [
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxjoin1",
+        "label": "Inspection Report",
+        "from": {
+          "type": "box",
+          "box": "Fabricate Components",
+          "side": "right",
+          "pos": 0.8
+        },
+        "to": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "top",
+          "pos": 0.75
+        }
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxjoin2",
+        "label": "Inspection Report",
+        "from": {
+          "type": "box",
+          "box": "Assemble Product",
+          "side": "right",
+          "pos": 0.8
+        },
+        "to": {
+          "type": "box",
+          "box": "Ship Product",
+          "side": "top",
+          "pos": 0.6
+        }
+      },
+      {
+        "op": "bindAll"
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxfork",
+        "label": "Order Copy",
+        "from": {
+          "type": "boundary",
+          "side": "left",
+          "pos": 0.3
+        },
+        "to": {
+          "type": "box",
+          "box": "Fabricate Components",
+          "side": "left",
+          "pos": 0.25
+        }
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Order Copy",
+        "field": "conceptId",
+        "value": "gl1"
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Order Copy",
+        "field": "label",
+        "value": "Customer Order"
+      }
+    ]
+  },
+  {
+    "name": "role-change",
+    "ops": [
+      {
+        "op": "setEnd",
+        "diagram": "A0",
+        "label": "Production Schedule",
+        "end": "from",
+        "value": {
+          "type": "boundary",
+          "side": "left",
+          "pos": 0.08
+        }
+      },
+      {
+        "op": "setEnd",
+        "diagram": "A0",
+        "label": "Production Schedule",
+        "end": "to",
+        "value": {
+          "type": "box",
+          "box": "Plan Production",
+          "side": "left",
+          "pos": 0.2
+        }
+      },
+      {
+        "op": "addArrow",
+        "diagram": "A0",
+        "id": "ar_fxqsin",
+        "label": "Standards Sheet",
+        "from": {
+          "type": "boundary",
+          "side": "left",
+          "pos": 0.7
+        },
+        "to": {
+          "type": "box",
+          "box": "Assemble Product",
+          "side": "left",
+          "pos": 0.75
+        }
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Standards Sheet",
+        "field": "conceptId",
+        "value": "gl3"
+      }
+    ]
+  },
+  {
+    "name": "concept-kind",
+    "ops": [
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "conceptId",
+        "value": "gl2"
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Assemble Product",
+        "field": "conceptId",
+        "value": "gl4"
+      },
+      {
+        "op": "renameConcept",
+        "from": "Customer Order",
+        "to": "Plan Production"
+      }
+    ]
+  },
+  {
+    "name": "structure",
+    "ops": [
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Components",
+        "field": "id",
+        "value": "ar_fxdup"
+      },
+      {
+        "op": "setArrow",
+        "diagram": "A0",
+        "label": "Assembled Product",
+        "field": "id",
+        "value": "ar_fxdup"
+      },
+      {
+        "op": "pushBox",
+        "diagram": "A0",
+        "id": "bx_fxdup",
+        "name": "Inspect Parts",
+        "number": 5,
+        "x": 820,
+        "y": 170,
+        "w": 150,
+        "h": 90
+      },
+      {
+        "op": "pushBox",
+        "diagram": "A0",
+        "id": "bx_fxdup",
+        "name": "Store Stock",
+        "number": 6,
+        "x": 110,
+        "y": 560,
+        "w": 150,
+        "h": 90
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "childDiagramId",
+        "value": "dg_fxmissing"
+      },
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "field": "childDiagramId",
+        "value": null
+      },
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Fabricate Components",
+        "count": 3
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Assemble Product",
+        "field": "childDiagramId",
+        "valueNode": "A2"
+      }
+    ]
+  },
+  {
+    "name": "decomp-cycle",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Assemble Product",
+        "count": 3
+      },
+      {
+        "op": "setBox",
+        "diagram": "A3",
+        "index": 0,
+        "field": "childDiagramId",
+        "valueNode": "A0"
+      },
+      {
+        "op": "setBox",
+        "diagram": "A3",
+        "index": 1,
+        "field": "childDiagramId",
+        "valueNode": "A-0"
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "childDiagramId",
+        "valueNode": "A0"
+      },
+      {
+        "op": "addBox",
+        "diagram": "A3",
+        "at": null
+      },
+      {
+        "op": "renumberNodes"
+      }
+    ]
+  },
+  {
+    "name": "cycle-delete",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Assemble Product",
+        "count": 3
+      },
+      {
+        "op": "setBox",
+        "diagram": "A3",
+        "index": 0,
+        "field": "childDiagramId",
+        "valueNode": "A0"
+      },
+      {
+        "op": "removeBox",
+        "diagram": "A0",
+        "name": "Assemble Product"
+      }
+    ]
+  },
+  {
+    "name": "remove-decomposed",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      },
+      {
+        "op": "decompose",
+        "diagram": "A1",
+        "index": 0,
+        "count": 3
+      },
+      {
+        "op": "removeBox",
+        "diagram": "A0",
+        "name": "Plan Production"
+      }
+    ]
+  },
+  {
+    "name": "delete-decomposition",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      },
+      {
+        "op": "decompose",
+        "diagram": "A1",
+        "index": 0,
+        "count": 3
+      },
+      {
+        "op": "deleteSubtree",
+        "diagram": "A1"
+      }
+    ]
+  },
+  {
+    "name": "combine",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      }
+    ]
+  },
+  {
+    "name": "combine-nested",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "combine",
+        "members": [
+          "Inputs",
+          "Production Schedule"
+        ],
+        "term": "Planning Inputs"
+      }
+    ]
+  },
+  {
+    "name": "uncombine",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "uncombine",
+        "term": "Inputs"
+      }
+    ]
+  },
+  {
+    "name": "uncombine-used",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      },
+      {
+        "op": "connectPort",
+        "diagram": "A1",
+        "code": "I1",
+        "id": "ar_fxport1",
+        "index": 0,
+        "side": "left",
+        "pos": 0.5
+      },
+      {
+        "op": "uncombine",
+        "term": "Inputs"
+      }
+    ]
+  },
+  {
+    "name": "uncombine-nested",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "combine",
+        "members": [
+          "Inputs",
+          "Production Schedule"
+        ],
+        "term": "Planning Inputs"
+      },
+      {
+        "op": "uncombine",
+        "term": "Inputs"
+      }
+    ]
+  },
+  {
+    "name": "combine-refused",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Work Order"
+        ],
+        "term": "Refused"
+      },
+      {
+        "op": "combine",
+        "members": [
+          "Work Order"
+        ],
+        "term": "Solo"
+      },
+      {
+        "op": "combine",
+        "members": [
+          "Work Order",
+          "No Such Concept"
+        ],
+        "term": "Unknown"
+      },
+      {
+        "op": "combine",
+        "members": [
+          "Work Order",
+          "Work Order"
+        ],
+        "term": "Twice"
+      },
+      {
+        "op": "uncombine",
+        "term": "Work Order"
+      }
+    ]
+  },
+  {
+    "name": "remove-member",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials",
+          "Plant Equipment"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "removeConcept",
+        "term": "Raw Materials"
+      }
+    ]
+  },
+  {
+    "name": "remove-bundle",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "combine",
+        "members": [
+          "Inputs",
+          "Production Schedule"
+        ],
+        "term": "Planning Inputs"
+      },
+      {
+        "op": "removeConcept",
+        "term": "Inputs"
+      }
+    ]
+  },
+  {
+    "name": "merge-rewrites-members",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "renameConcept",
+        "from": "Raw Materials",
+        "to": "Customer Order"
+      }
+    ]
+  },
+  {
+    "name": "merge-into-member-refused",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "renameConcept",
+        "from": "Inputs",
+        "to": "Customer Order"
+      }
+    ]
+  },
+  {
+    "name": "merge-across-bundles-refused",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "combine",
+        "members": [
+          "Production Schedule",
+          "Quality Standards"
+        ],
+        "term": "Controls"
+      },
+      {
+        "op": "renameConcept",
+        "from": "Raw Materials",
+        "to": "Quality Standards"
+      }
+    ]
+  },
+  {
+    "name": "bundle-port",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "removeArrow",
+        "diagram": "A0",
+        "label": "Customer Order"
+      },
+      {
+        "op": "removeArrow",
+        "diagram": "A0",
+        "label": "Raw Materials"
+      }
+    ]
+  },
+  {
+    "name": "merge-member-into-bundle",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "renameConcept",
+        "from": "Customer Order",
+        "to": "Inputs"
+      }
+    ]
+  },
+  {
+    "name": "merge-bundle-into-plain",
+    "ops": [
+      {
+        "op": "combine",
+        "members": [
+          "Customer Order",
+          "Raw Materials"
+        ],
+        "term": "Inputs"
+      },
+      {
+        "op": "renameConcept",
+        "from": "Inputs",
+        "to": "Components"
+      }
+    ]
+  },
+  {
+    "name": "decompose-ports",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "name": "connect-port",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      },
+      {
+        "op": "connectPort",
+        "diagram": "A1",
+        "code": "I1",
+        "id": "ar_fxport1",
+        "index": 0,
+        "side": "left",
+        "pos": 0.5
+      },
+      {
+        "op": "connectPort",
+        "diagram": "A1",
+        "code": "O1",
+        "id": "ar_fxport2",
+        "index": 2,
+        "side": "right",
+        "pos": 0.5
+      }
+    ]
+  },
+  {
+    "name": "disconnect-port",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      },
+      {
+        "op": "connectPort",
+        "diagram": "A1",
+        "code": "I1",
+        "id": "ar_fxport1",
+        "index": 0,
+        "side": "left",
+        "pos": 0.5
+      },
+      {
+        "op": "connectPort",
+        "diagram": "A1",
+        "code": "O1",
+        "id": "ar_fxport2",
+        "index": 2,
+        "side": "right",
+        "pos": 0.5
+      },
+      {
+        "op": "removeArrow",
+        "diagram": "A1",
+        "label": "Customer Order"
+      }
+    ]
+  },
+  {
+    "name": "add-box-layout",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "count": 3
+      },
+      {
+        "op": "addBox",
+        "diagram": "A1"
+      },
+      {
+        "op": "addBox",
+        "diagram": "A1"
+      },
+      {
+        "op": "layout",
+        "diagram": "A-0"
+      }
+    ]
+  },
+  {
+    "name": "remove-box-layout",
+    "ops": [
+      {
+        "op": "decompose",
+        "diagram": "A0",
+        "name": "Fabricate Components",
+        "count": 5
+      },
+      {
+        "op": "removeBox",
+        "diagram": "A2",
+        "index": 1
+      }
+    ]
+  },
+  {
+    "name": "move-box",
+    "ops": [
+      {
+        "op": "moveBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "by": -1
+      },
+      {
+        "op": "moveBox",
+        "diagram": "A0",
+        "name": "Plan Production",
+        "by": -1
+      },
+      {
+        "op": "moveBox",
+        "diagram": "A0",
+        "name": "Assemble Product",
+        "by": 1
+      }
+    ]
+  },
+  {
+    "name": "arrange",
+    "ops": [
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "x",
+        "value": 20
+      },
+      {
+        "op": "setBox",
+        "diagram": "A0",
+        "name": "Ship Product",
+        "field": "y",
+        "value": 20
+      },
+      {
+        "op": "layout",
+        "diagram": "A0"
+      }
+    ]
+  }
+]

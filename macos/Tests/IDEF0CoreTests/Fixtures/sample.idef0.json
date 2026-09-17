@@ -1,0 +1,671 @@
+{
+  "schema": "idef0-modeler/1",
+  "id": "mdl_mu4wz347dad8536a0074b327",
+  "title": "Manufacture Product",
+  "author": "A. Modeller",
+  "project": "Plant Operations Baseline",
+  "purpose": "To describe how the plant converts customer orders and raw materials into shipped product, as a baseline for measuring cycle time.",
+  "viewpoint": "The production manager responsible for the plant floor.",
+  "status": "DRAFT",
+  "created": "2026-09-14",
+  "revised": "2026-09-14",
+  "glossary": [
+    {
+      "id": "gl_mu4wz34805de3aa395ceb904",
+      "term": "Assemble Product",
+      "kind": "activity",
+      "definition": ""
+    },
+    {
+      "id": "gl_mu4wz348a43f867491b261dd",
+      "term": "Assembled Product",
+      "kind": "data",
+      "definition": ""
+    },
+    {
+      "id": "gl_mu4wz348d3f93ebfc4df3d5a",
+      "term": "Components",
+      "kind": "data",
+      "definition": ""
+    },
+    {
+      "id": "gl1",
+      "term": "Customer Order",
+      "kind": "data",
+      "definition": "A confirmed request for product, carrying quantity, specification and required date."
+    },
+    {
+      "id": "gl_mu4wz34866dd366b86e75344",
+      "term": "Fabricate Components",
+      "kind": "activity",
+      "definition": ""
+    },
+    {
+      "id": "gl_mu4wz348a4215b6739a73d7a",
+      "term": "Finished Product",
+      "kind": "data",
+      "definition": ""
+    },
+    {
+      "id": "gl_mu4wz3488b3ec93c788ca8ce",
+      "term": "Manufacture Product",
+      "kind": "activity",
+      "definition": ""
+    },
+    {
+      "id": "gl_mu4wz348a05619478e1d3124",
+      "term": "Plan Production",
+      "kind": "activity",
+      "definition": ""
+    },
+    {
+      "id": "gl4",
+      "term": "Plant Equipment",
+      "kind": "mechanism",
+      "definition": "Machine tools, fixtures and handling equipment on the plant floor."
+    },
+    {
+      "id": "gl_mu4wz348107ccbae4efdeb57",
+      "term": "Production Schedule",
+      "kind": "data",
+      "definition": ""
+    },
+    {
+      "id": "gl_mu4wz34873b63f24c0f53e1b",
+      "term": "Production Staff",
+      "kind": "mechanism",
+      "definition": ""
+    },
+    {
+      "id": "gl3",
+      "term": "Quality Standards",
+      "kind": "data",
+      "definition": "The dimensional and finish tolerances that fabricated and assembled product must meet."
+    },
+    {
+      "id": "gl_mu4wz3482ca81d526b8b011d",
+      "term": "Raw Materials",
+      "kind": "data",
+      "definition": ""
+    },
+    {
+      "id": "gl_mu4wz34879f5484a16a3b38a",
+      "term": "Ship Product",
+      "kind": "activity",
+      "definition": ""
+    },
+    {
+      "id": "gl_mu4wz348d3b84906c272551d",
+      "term": "Shipping Notice",
+      "kind": "data",
+      "definition": ""
+    },
+    {
+      "id": "gl2",
+      "term": "Work Order",
+      "kind": "data",
+      "definition": "The released instruction authorising a specific quantity to be made, derived from the production schedule."
+    }
+  ],
+  "diagrams": {
+    "dg_mu4wz34721f3bdc61644f24e": {
+      "id": "dg_mu4wz34721f3bdc61644f24e",
+      "node": "A-0",
+      "title": "Manufacture Product",
+      "titleLocked": false,
+      "parentBoxId": null,
+      "cNumber": "",
+      "notes": [],
+      "boxes": [
+        {
+          "id": "bx_mu4wz3479a9aec451118d7a1",
+          "name": "Manufacture Product",
+          "number": 0,
+          "conceptId": "gl_mu4wz3488b3ec93c788ca8ce",
+          "x": 400,
+          "y": 358,
+          "w": 300,
+          "h": 170,
+          "childDiagramId": "dg_mu4wz348951b413b3fdc22cc",
+          "note": "",
+          "refs": ""
+        }
+      ],
+      "arrows": [
+        {
+          "id": "ar_mu4wz348304d95256eedc1ec",
+          "label": "Customer Order",
+          "conceptId": "gl1",
+          "from": {
+            "type": "boundary",
+            "side": "left",
+            "pos": 0.33
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3479a9aec451118d7a1",
+            "side": "left",
+            "pos": 0.33
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz34853c691b02c19cba5",
+          "label": "Raw Materials",
+          "conceptId": "gl_mu4wz3482ca81d526b8b011d",
+          "from": {
+            "type": "boundary",
+            "side": "left",
+            "pos": 0.66
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3479a9aec451118d7a1",
+            "side": "left",
+            "pos": 0.66
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz348908fac0daa5e7c6b",
+          "label": "Production Schedule",
+          "conceptId": "gl_mu4wz348107ccbae4efdeb57",
+          "from": {
+            "type": "boundary",
+            "side": "top",
+            "pos": 0.26
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3479a9aec451118d7a1",
+            "side": "top",
+            "pos": 0.25
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz348b87ec29161c01369",
+          "label": "Quality Standards",
+          "conceptId": "gl3",
+          "from": {
+            "type": "boundary",
+            "side": "top",
+            "pos": 0.72
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3479a9aec451118d7a1",
+            "side": "top",
+            "pos": 0.75
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz348cdcd4701d0805d99",
+          "label": "Finished Product",
+          "conceptId": "gl_mu4wz348a4215b6739a73d7a",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz3479a9aec451118d7a1",
+            "side": "right",
+            "pos": 0.33
+          },
+          "to": {
+            "type": "boundary",
+            "side": "right",
+            "pos": 0.33
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz3486789a13d1e3b3984",
+          "label": "Shipping Notice",
+          "conceptId": "gl_mu4wz348d3b84906c272551d",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz3479a9aec451118d7a1",
+            "side": "right",
+            "pos": 0.66
+          },
+          "to": {
+            "type": "boundary",
+            "side": "right",
+            "pos": 0.66
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz34861a3b95fccb52f1c",
+          "label": "Plant Equipment",
+          "conceptId": "gl4",
+          "from": {
+            "type": "boundary",
+            "side": "bottom",
+            "pos": 0.26
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3479a9aec451118d7a1",
+            "side": "bottom",
+            "pos": 0.25
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz34810d1109f59cd2471",
+          "label": "Production Staff",
+          "conceptId": "gl_mu4wz34873b63f24c0f53e1b",
+          "from": {
+            "type": "boundary",
+            "side": "bottom",
+            "pos": 0.72
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3479a9aec451118d7a1",
+            "side": "bottom",
+            "pos": 0.75
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        }
+      ]
+    },
+    "dg_mu4wz348951b413b3fdc22cc": {
+      "id": "dg_mu4wz348951b413b3fdc22cc",
+      "node": "A0",
+      "title": "Manufacture Product",
+      "titleLocked": false,
+      "parentBoxId": "bx_mu4wz3479a9aec451118d7a1",
+      "cNumber": "",
+      "notes": [],
+      "boxes": [
+        {
+          "id": "bx_mu4wz348d3873b99aee0c565",
+          "name": "Plan Production",
+          "number": 1,
+          "conceptId": "gl_mu4wz348a05619478e1d3124",
+          "x": 100,
+          "y": 172,
+          "w": 190,
+          "h": 112,
+          "childDiagramId": null,
+          "note": "",
+          "refs": ""
+        },
+        {
+          "id": "bx_mu4wz3480e9e1b96b2a2f64f",
+          "name": "Fabricate Components",
+          "number": 2,
+          "conceptId": "gl_mu4wz34866dd366b86e75344",
+          "x": 337,
+          "y": 299,
+          "w": 190,
+          "h": 112,
+          "childDiagramId": null,
+          "note": "",
+          "refs": ""
+        },
+        {
+          "id": "bx_mu4wz3484ffd28ea77305c8a",
+          "name": "Assemble Product",
+          "number": 3,
+          "conceptId": "gl_mu4wz34805de3aa395ceb904",
+          "x": 573,
+          "y": 425,
+          "w": 190,
+          "h": 112,
+          "childDiagramId": null,
+          "note": "",
+          "refs": ""
+        },
+        {
+          "id": "bx_mu4wz34803e5ac45da9e3fb3",
+          "name": "Ship Product",
+          "number": 4,
+          "conceptId": "gl_mu4wz34879f5484a16a3b38a",
+          "x": 810,
+          "y": 552,
+          "w": 190,
+          "h": 112,
+          "childDiagramId": null,
+          "note": "",
+          "refs": ""
+        }
+      ],
+      "arrows": [
+        {
+          "id": "ar_mu4wz3486c6f0eea771f34d1",
+          "label": "Customer Order",
+          "conceptId": "gl1",
+          "from": {
+            "type": "boundary",
+            "side": "left",
+            "pos": 0.18
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz348d3873b99aee0c565",
+            "side": "left",
+            "pos": 0.5
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz34802b8e04b5282d459",
+          "label": "Raw Materials",
+          "conceptId": "gl_mu4wz3482ca81d526b8b011d",
+          "from": {
+            "type": "boundary",
+            "side": "left",
+            "pos": 0.45
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3480e9e1b96b2a2f64f",
+            "side": "left",
+            "pos": 0.5
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz34817b9ff856b484eb2",
+          "label": "Production Schedule",
+          "conceptId": "gl_mu4wz348107ccbae4efdeb57",
+          "from": {
+            "type": "boundary",
+            "side": "top",
+            "pos": 0.14
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz348d3873b99aee0c565",
+            "side": "top",
+            "pos": 0.5
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz3482153bcbb8c4fd2c4",
+          "label": "Quality Standards",
+          "conceptId": "gl3",
+          "from": {
+            "type": "boundary",
+            "side": "top",
+            "pos": 0.55
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3480e9e1b96b2a2f64f",
+            "side": "top",
+            "pos": 0.85
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz3485df32fdfa90387d8",
+          "label": "Plant Equipment",
+          "conceptId": "gl4",
+          "from": {
+            "type": "boundary",
+            "side": "bottom",
+            "pos": 0.36
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3480e9e1b96b2a2f64f",
+            "side": "bottom",
+            "pos": 0.5
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz348714ac202ce62046f",
+          "label": "Production Staff",
+          "conceptId": "gl_mu4wz34873b63f24c0f53e1b",
+          "from": {
+            "type": "boundary",
+            "side": "bottom",
+            "pos": 0.62
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3484ffd28ea77305c8a",
+            "side": "bottom",
+            "pos": 0.5
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz3486e9a2b836374f2da",
+          "label": "Work Order",
+          "conceptId": "gl2",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz348d3873b99aee0c565",
+            "side": "right",
+            "pos": 0.5
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3480e9e1b96b2a2f64f",
+            "side": "top",
+            "pos": 0.25
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz348bb4bdcbce5d7eb62",
+          "label": "Work Order",
+          "conceptId": "gl2",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz348d3873b99aee0c565",
+            "side": "right",
+            "pos": 0.7
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3484ffd28ea77305c8a",
+            "side": "top",
+            "pos": 0.3
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz3483e310a75493801c5",
+          "label": "Work Order",
+          "conceptId": "gl2",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz348d3873b99aee0c565",
+            "side": "right",
+            "pos": 0.88
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz34803e5ac45da9e3fb3",
+            "side": "top",
+            "pos": 0.3
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz3480b26d83c92015a1a",
+          "label": "Components",
+          "conceptId": "gl_mu4wz348d3f93ebfc4df3d5a",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz3480e9e1b96b2a2f64f",
+            "side": "right",
+            "pos": 0.5
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz3484ffd28ea77305c8a",
+            "side": "left",
+            "pos": 0.5
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz3480b5c586967f45c09",
+          "label": "Assembled Product",
+          "conceptId": "gl_mu4wz348a43f867491b261dd",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz3484ffd28ea77305c8a",
+            "side": "right",
+            "pos": 0.5
+          },
+          "to": {
+            "type": "box",
+            "boxId": "bx_mu4wz34803e5ac45da9e3fb3",
+            "side": "left",
+            "pos": 0.5
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz3488bbff11ef98b426a",
+          "label": "Finished Product",
+          "conceptId": "gl_mu4wz348a4215b6739a73d7a",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz34803e5ac45da9e3fb3",
+            "side": "right",
+            "pos": 0.35
+          },
+          "to": {
+            "type": "boundary",
+            "side": "right",
+            "pos": 0.8
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        },
+        {
+          "id": "ar_mu4wz34897d118da94b1f08f",
+          "label": "Shipping Notice",
+          "conceptId": "gl_mu4wz348d3b84906c272551d",
+          "from": {
+            "type": "box",
+            "boxId": "bx_mu4wz34803e5ac45da9e3fb3",
+            "side": "right",
+            "pos": 0.7
+          },
+          "to": {
+            "type": "boundary",
+            "side": "right",
+            "pos": 0.88
+          },
+          "bend": null,
+          "ldx": 0,
+          "ldy": 0,
+          "tunnelFrom": false,
+          "tunnelTo": false,
+          "note": ""
+        }
+      ]
+    }
+  },
+  "rootDiagramId": "dg_mu4wz34721f3bdc61644f24e"
+}

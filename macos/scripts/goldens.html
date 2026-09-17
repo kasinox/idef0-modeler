@@ -1,0 +1,749 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>IDEF0 golden fixtures</title>
+<style>
+  body { font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 2rem; color: #1a1c1f; }
+  h1 { font: 600 18px system-ui, sans-serif; }
+  .ok { color: #3d6b4a; } .err { color: #9c3327; }
+</style>
+<h1>Regenerating the Swift parity fixtures from the web app</h1>
+<p>Serve with <code>python3 macos/scripts/fixture_server.py</code> and open this page. It runs the web app's own
+modules and writes every golden file into <code>macos/Tests/IDEF0CoreTests/Fixtures/</code>.</p>
+<pre id="log">working…</pre>
+
+<script type="module">
+// The reference behaviour for the Swift port. Every value here comes from the
+// web app's modules; the Swift tests replay the same scenarios and compare.
+// Regenerating changes the sample's random ids, and every golden with them,
+// consistently — no Swift test depends on a particular id.
+
+const logEl = document.getElementById('log');
+const lines = [];
+const say = (s, cls = '') => { lines.push(cls ? `<span class="${cls}">${s}</span>` : s); logEl.innerHTML = lines.join('\n'); };
+
+try {
+  const M = await import('/src/model/model.js');
+  const G = await import('/src/model/geometry.js');
+  const T = await import('/src/model/types.js');
+  const C = await import('/src/model/concepts.js');
+  const V = await import('/src/model/validate.js');
+  const S = await import('/src/model/sample.js');
+  const J = await import('/src/io/json.js');
+  const X = await import('/src/io/idef0xml.js');
+  const R = await import('/src/io/report.js');
+  const U = await import('/src/util.js');
+  const RN = await import('/src/ui/render.js');
+  // F88: the scenario DSL, apply() and computeAll() live in one DOM-free
+  // module shared with tests/web's staleness suite, so both replay exactly
+  // the same logic rather than two hand-kept copies that could drift apart.
+  const H = await import('/macos/scripts/golden-harness.js');
+
+  // F86: a non-2xx response used to only be styled red in the log; the run
+  // still ended '/__done/ok'. Throwing here sends it to the catch block below
+  // instead, which reports '/__done/error' — so a rejected fixture write
+  // fails the whole regeneration rather than silently leaving that one file
+  // stale (or, worse, since fixture_server.py now stages into a fresh temp
+  // directory, simply missing from the stage).
+  const post = async (name, text) => {
+    const r = await fetch('/__fixture/' + name, { method: 'POST', body: text });
+    const body = await r.text();
+    say(`${name}: ${body}`, r.ok ? 'ok' : 'err');
+    if (!r.ok) throw new Error(`POST /__fixture/${name} failed: ${r.status} ${body}`);
+  };
+
+  /* ---------------- the canonical sample file ---------------- */
+  const built = C.bindAll(J.deserialize(J.serialize(S.buildSampleModel())));
+  built.created = '2026-09-14';
+  built.revised = '2026-09-14';
+  const sampleText = J.serialize(built);
+  await post('sample.idef0.json', sampleText);
+  const load = () => C.bindAll(J.deserialize(sampleText));
+
+  // F88: the scenario DSL lives in one DOM-free module (golden-harness.js)
+  // shared with tests/web/goldens-staleness.test.mjs, so both stay honest
+  // against the same op replay.
+  const scenarios = H.scenarios;
+  await post('scenarios.json', JSON.stringify(scenarios, null, 2));
+
+  const apply = H.apply;
+  const fixedIds = H.fixedIdsFor(sampleText);
+  const normalize = (text) => H.normalize(text, fixedIds);
+  const computeAll = H.computeAll;
+  // Used further down (the label-placement battery) to find a diagram or
+  // arrow the same way apply()'s ops do.
+  const { byNode, arrowByLabel } = H;
+
+  const goldenScenarios = {};
+  for (const sc of scenarios) {
+    const m = load();
+    for (const op of sc.ops) apply(m, op);
+    goldenScenarios[sc.name] = JSON.parse(normalize(JSON.stringify(computeAll(m))));
+  }
+  await post('golden-scenarios.json', JSON.stringify(goldenScenarios));
+
+  /* ---------------- geometry batteries ---------------- */
+  const rnd = (i) => { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+  const sides = ['left', 'top', 'right', 'bottom'];
+  const routes = [];
+  for (let i = 0; i < 500; i += 1) {
+    const nb = 1 + Math.floor(rnd(i * 7 + 1) * 5);
+    const boxes = [];
+    for (let k = 0; k < nb; k += 1) boxes.push({ id: 'b' + k, x: 60 + rnd(i * 13 + k) * 820, y: 150 + rnd(i * 17 + k) * 480, w: 110 + rnd(i * 19 + k) * 100, h: 70 + rnd(i * 23 + k) * 60 });
+    const mk = (seed) => { const side = sides[Math.floor(rnd(seed + 1) * 4)]; const pos = rnd(seed + 2) * 1.04 - 0.02; return rnd(seed) < 0.25 ? { type: 'boundary', side, pos } : { type: 'box', boxId: 'b' + Math.floor(rnd(seed + 3) * nb), side, pos }; };
+    const from = mk(i * 29 + 3), to = mk(i * 31 + 5);
+    const bend = rnd(i * 37) < 0.2 ? 100 + rnd(i * 41) * 900 : null;
+    const dg = { boxes, arrows: [] };
+    const A = G.anchorOf(dg, from), B = G.anchorOf(dg, to);
+    const pts = G.routePoints(A, B, bend, boxes);
+    routes.push({
+      boxes, from, to, bend, A, B, pts, path: G.pointsToPath(pts), mid: G.longestSegmentMid(pts), len: G.pathLength(pts),
+      at25: G.pointAt(pts, 0.25), dist: G.distToPolyline(pts, { x: 550, y: 440 }),
+      // F66: the same query point's nearest point on the route.
+      nearestPt: G.nearestPointOnPolyline(pts, { x: 550, y: 440 }),
+    });
+  }
+  const nearest = [];
+  for (let i = 0; i < 200; i += 1) {
+    const rect = { x: 100 + rnd(i) * 600, y: 150 + rnd(i + 1) * 400, w: 110 + rnd(i + 2) * 120, h: 70 + rnd(i + 3) * 80 };
+    const pt = { x: rect.x - 40 + rnd(i + 4) * (rect.w + 80), y: rect.y - 40 + rnd(i + 5) * (rect.h + 80) };
+    nearest.push({ rect, pt, ns: G.nearestSide(rect, pt), inRect: G.pointInRect(rect, pt) });
+  }
+
+  /* ---------------- routing edge cases (F57, F58): flush and near-edge
+   * boxes on every side, facing ends closer than two stubs, and an L-route
+   * that would otherwise cross its own target box. goldens.html's random
+   * battery above never places a box flush against the drawing area
+   * (x >= 60, y >= 150), so these are hand-placed. */
+  const { WORK } = T;
+  const edgeCase = (name, boxes, from, to) => {
+    const dg = { boxes, arrows: [] };
+    const A = G.anchorOf(dg, from), B = G.anchorOf(dg, to);
+    const pts = G.routePoints(A, B, null, boxes);
+    return { name, boxes, from, to, A, B, pts, path: G.pointsToPath(pts), mid: G.longestSegmentMid(pts) };
+  };
+  const edgeCases = [
+    // A top-boundary input 40 units above a box flush with it: facing ends
+    // closer than two stub-lengths (F58 item 1) — the sample's own C1 shape.
+    edgeCase('top-facing-close',
+      [{ id: 'e0', x: 300, y: WORK.y + 40, w: 190, h: 112 }],
+      { type: 'boundary', side: 'top', pos: 0.2 }, { type: 'box', boxId: 'e0', side: 'top', pos: 0.5 }),
+    // A box flush with the top edge (zero gap): the frame clamp (item 2)
+    // keeps the approach stub off the header band.
+    edgeCase('top-flush-clamp',
+      [{ id: 'e0b', x: 300, y: WORK.y, w: 190, h: 112 }],
+      { type: 'boundary', side: 'top', pos: 0.2 }, { type: 'box', boxId: 'e0b', side: 'top', pos: 0.5 }),
+    // A left-boundary input to a box flush with the left edge: the
+    // degenerate boundary-source case (item 3) — the stress2 "Customer
+    // Order" shape — draws a bracket in the margin instead of a loop
+    // outside the frame or a route back through the box.
+    edgeCase('left-flush-degenerate',
+      [{ id: 'e1', x: WORK.x, y: 400, w: 190, h: 112 }],
+      { type: 'boundary', side: 'left', pos: 0.4 }, { type: 'box', boxId: 'e1', side: 'left', pos: 0.5 }),
+    // The same degenerate source, entering the box's top face instead of its
+    // left: the source is still excluded from the feedback test even though
+    // the target's own orientation differs (h1 false).
+    edgeCase('left-flush-degenerate-vertical-target',
+      [{ id: 'e2', x: WORK.x, y: 400, w: 190, h: 112 }],
+      { type: 'boundary', side: 'left', pos: 0.42 }, { type: 'box', boxId: 'e2', side: 'top', pos: 0.05 }),
+    // A box flush with the right edge, its own output back to the right
+    // boundary: the frame clamp on the far side.
+    edgeCase('right-flush-clamp',
+      [{ id: 'e3', x: WORK.x2 - 190, y: 300, w: 190, h: 112 }],
+      { type: 'box', boxId: 'e3', side: 'right', pos: 0.5 }, { type: 'boundary', side: 'right', pos: 0.4 }),
+    // A box flush with the bottom edge, its own output back to the bottom
+    // boundary: the frame clamp on the footer side.
+    edgeCase('bottom-flush-clamp',
+      [{ id: 'e4', x: 400, y: WORK.y2 - 112, w: 190, h: 112 }],
+      { type: 'box', boxId: 'e4', side: 'bottom', pos: 0.5 }, { type: 'boundary', side: 'bottom', pos: 0.5 }),
+    // Two boxes 20 units apart, output facing input (F58 item 1): reach only
+    // the midline, rather than the old down-and-under loop this pair used to
+    // draw (a forward gap this narrow satisfied the old feedback test too).
+    edgeCase('facing-close-hh',
+      [{ id: 'e5', x: 300, y: 300, w: 190, h: 112 }, { id: 'e6', x: 300 + 190 + 20, y: 300, w: 190, h: 112 }],
+      { type: 'box', boxId: 'e5', side: 'right', pos: 0.3 }, { type: 'box', boxId: 'e6', side: 'left', pos: 0.7 }),
+    // The vertical equivalent: two boxes 15 units apart, top to bottom.
+    edgeCase('facing-close-vv',
+      [{ id: 'e7', x: 300, y: 300, w: 190, h: 112 }, { id: 'e8', x: 300, y: 300 + 112 + 15, w: 190, h: 112 }],
+      { type: 'box', boxId: 'e7', side: 'bottom', pos: 0.3 }, { type: 'box', boxId: 'e8', side: 'top', pos: 0.7 }),
+    // An output whose one-corner route would climb through the target box
+    // from below to reach its bottom face (the "Tooling" shape) — routed
+    // around it with a Z instead (F57).
+    edgeCase('z-route-right-to-bottom',
+      [{ id: 'e9', x: 40, y: 250, w: 190, h: 112 }, { id: 'e10', x: 330, y: 300, w: 190, h: 112 },
+        { id: 'e11', x: 600, y: 560, w: 190, h: 112 }],
+      { type: 'box', boxId: 'e9', side: 'right', pos: 0.5 }, { type: 'box', boxId: 'e11', side: 'bottom', pos: 0.5 }),
+    // The mirror image: a route that would dip through the target box from
+    // above to reach its top face (the "Work Order" shape).
+    edgeCase('z-route-right-to-top',
+      [{ id: 'e12', x: 40, y: 250, w: 190, h: 112 }, { id: 'e13', x: 330, y: 300, w: 190, h: 112 },
+        { id: 'e14', x: 600, y: 110, w: 190, h: 112 }],
+      { type: 'box', boxId: 'e12', side: 'right', pos: 0.5 }, { type: 'box', boxId: 'e14', side: 'top', pos: 0.5 }),
+    // A vertical-to-horizontal route (source bottom, target left) that would
+    // otherwise cross the target box on its way down: F57's other mixed
+    // branch, the symmetric rule on x instead of y.
+    edgeCase('z-route-bottom-to-left',
+      [{ id: 'e15', x: 150, y: 200, w: 190, h: 112 }, { id: 'e16', x: 100, y: 380, w: 190, h: 112 }],
+      { type: 'box', boxId: 'e15', side: 'bottom', pos: 0.5 }, { type: 'box', boxId: 'e16', side: 'left', pos: 0.3 }),
+    // Its mirror image: source top, target right.
+    edgeCase('z-route-top-to-right',
+      [{ id: 'e17', x: 150, y: 450, w: 190, h: 112 }, { id: 'e18', x: 100, y: 200, w: 190, h: 112 }],
+      { type: 'box', boxId: 'e17', side: 'top', pos: 0.5 }, { type: 'box', boxId: 'e18', side: 'right', pos: 0.7 }),
+  ];
+  await post('golden-edge-cases.json', JSON.stringify(edgeCases));
+
+  /* ---------------- lane groups (F61): parallel arrows between the same
+   * faces are spread into separate lanes; arrows that fork or join (share an
+   * end anchor) are left drawn on top of one another; a pinned bend is
+   * excluded and does not count against its neighbours' group. */
+  const laneGroup = (name, boxes, arrows) => {
+    const dg = { boxes, arrows };
+    const routes = {};
+    for (const a of arrows) routes[a.id] = G.routeArrow(dg, a);
+    return { name, boxes, arrows, routes };
+  };
+  const lgB1 = { id: 'b1', x: 100, y: 280, w: 190, h: 112 };
+  const lgB2 = { id: 'b2', x: 400, y: 400, w: 190, h: 112 };
+  const laneGroups = [
+    // The "rl" shape: two outputs of one box feeding two inputs of the next,
+    // offset vertically enough that the old fixed midpoint drew them as one
+    // overlapping line.
+    laneGroup('rl-pair', [lgB1, lgB2], [
+      { id: 'a1', label: 'Parts', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.35 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.5 }, bend: null },
+      { id: 'a2', label: 'Subassemblies', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.6 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.85 }, bend: null },
+    ]),
+    // Two arrows sharing their source anchor exactly — a drawn fork — keep
+    // one overlapping route rather than being spread apart.
+    laneGroup('fork-shared-source', [lgB1, lgB2], [
+      { id: 'f1', label: 'Fork1', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.5 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.3 }, bend: null },
+      { id: 'f2', label: 'Fork2', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.5 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.7 }, bend: null },
+    ]),
+    // Three arrows between the same faces: two fork at the source (f1, f2)
+    // and do not spread apart from each other, but neither shares an anchor
+    // with p1, so all three still collide and land in one three-lane group —
+    // colliding is transitive, so the group (and each member's place in it)
+    // comes out the same no matter which member is asked.
+    laneGroup('fork-plus-third', [lgB1, lgB2], [
+      { id: 'p1', label: 'Parts', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.35 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.5 }, bend: null },
+      { id: 'p2', label: 'Subassemblies', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.6 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.85 }, bend: null },
+      { id: 'p3', label: 'Fork1', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.6 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.2 }, bend: null },
+    ]),
+    // A pinned bend keeps its exact position and is excluded from grouping —
+    // it neither moves itself nor shifts the arrow it would otherwise
+    // collide with.
+    laneGroup('pinned-excluded', [lgB1, lgB2], [
+      { id: 'q1', label: 'Pinned', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.35 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.5 }, bend: 260 },
+      { id: 'q2', label: 'Free', from: { type: 'box', boxId: 'b1', side: 'right', pos: 0.6 }, to: { type: 'box', boxId: 'b2', side: 'left', pos: 0.85 }, bend: null },
+    ]),
+  ];
+  await post('golden-lane-groups.json', JSON.stringify(laneGroups));
+  const staircase = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ n, rects: M.staircaseLayout(n) }));
+  const reading = [];
+  for (let i = 0; i < 120; i += 1) {
+    const n = 2 + Math.floor(rnd(i * 3) * 5);
+    const boxes = [];
+    for (let k = 0; k < n; k += 1) boxes.push({ id: 'r' + k, x: 60 + rnd(i * 5 + k) * 850, y: 150 + rnd(i * 11 + k) * 500, w: 120, h: 80, number: 0 });
+    reading.push({ boxes, order: M.boxReadingOrder(boxes).map((b) => b.id) });
+  }
+  const free = [];
+  for (let i = 0; i < 60; i += 1) {
+    const used = Array.from({ length: Math.floor(rnd(i) * 8) }, (_, k) => Math.round(rnd(i * 9 + k) * 100) / 100);
+    const dg = { arrows: used.map((p) => ({ from: { type: 'boundary', side: 'left', pos: p }, to: { type: 'box', boxId: 'x', side: 'top', pos: 0.5 } })) };
+    free.push({ used, pos: M.freePos(dg, (e) => e.type === 'boundary' && e.side === 'left') });
+  }
+  await post('golden-geometry.json', JSON.stringify({ routes, nearest, staircase, reading, free }));
+
+  /* ---------------- label placement (F59, F66): labelPlacement auto-places
+   * clear of boxes, ICOM codes and the frame; labelPosition chooses between
+   * that and the legacy base plus a manual ldx/ldy; squigglePoints links a
+   * far-off manual label back to its route. Same arithmetic in both apps, so
+   * a modeller sees the same placement, and the same squiggle, either way. */
+  const labelFor = (dg, icomEnds, boxes, a) => {
+    const pts = G.routeArrow(dg, a);
+    const width = U.textWidth(a.label, 10.5);
+    const auto = G.labelPlacement(pts, a.label, { icomEnds, boxes });
+    const base = G.legacyLabelBase(pts);
+    const displayed = G.labelPosition(pts, a, { icomEnds, boxes });
+    return {
+      id: a.id, label: a.label, ldx: a.ldx, ldy: a.ldy, pts, auto, base, displayed,
+      rect: G.labelRect(displayed, width), squiggle: G.squigglePoints(pts, displayed, width),
+    };
+  };
+
+  // Every labelled arrow of every sample diagram, in its real box and ICOM
+  // context (icomRects itself frame-clamps I1/I2/C1/C2/M1/M2, whose boundary
+  // position sits at clamp01's 0.02 minimum, close enough to the edge that
+  // this fixture alone proves the clamp). This is what fixes the shipped
+  // 'Customer Order'/I1 collision and the 'Finished Product'/'Shipping
+  // Notice' frame overflow.
+  const labelSample = load();
+  const labelDiagrams = [];
+  for (const dg of Object.values(labelSample.diagrams)) {
+    const icomEnds = RN.icomRects(labelSample, dg);
+    const boxes = dg.boxes.map(G.rectOf);
+    labelDiagrams.push({
+      node: dg.node, icomEnds, boxes,
+      arrows: dg.arrows.filter((a) => a.label).map((a) => labelFor(dg, icomEnds, boxes, a)),
+    });
+  }
+
+  // The same two arrows, manually dragged: a small offset (still near its
+  // route, no squiggle) and a large one (far from it, a squiggle back).
+  // Applied to a deep clone of A0 — not the loaded model above — so `a` stays
+  // a real member of `dgClone.arrows` (routeArrow's own lane-offset grouping
+  // keys off `diagram.arrows.includes(arrow)`) while the sample-diagram
+  // battery above stays at ldx = ldy = 0 throughout.
+  const draggedCases = [];
+  for (const [label, ldx, ldy] of [['Customer Order', 10, -6], ['Customer Order', 90, 60], ['Raw Materials', 0, 40]]) {
+    const dgClone = U.deepClone(byNode(labelSample, 'A0'));
+    const a = arrowByLabel(dgClone, label);
+    a.ldx = ldx; a.ldy = ldy;
+    const icomEnds = RN.icomRects(labelSample, dgClone);
+    const boxes = dgClone.boxes.map(G.rectOf);
+    draggedCases.push({ label, ldx, ldy, ...labelFor(dgClone, icomEnds, boxes, a) });
+  }
+
+  // Hand-built routes exercise cases the sample model may not: a clean
+  // candidate identical to the pre-F59 fixed offset, a tie between two equal
+  // segments, a vertical run whose start-anchored side collides so the
+  // end-anchored one wins, and two diagrams cramped enough that every
+  // candidate collides with something — where the frame/ICOM/box penalty
+  // weights decide which collision the reader has to live with.
+  const battery = [];
+  const bcase = (name, pts, text, icomEnds = [], boxes = []) => {
+    const width = U.textWidth(text, 10.5);
+    const placement = G.labelPlacement(pts, text, { icomEnds, boxes });
+    battery.push({ name, pts, text, icomEnds, boxes, placement, rect: G.labelRect(placement, width) });
+  };
+  // No boxes or codes nearby: the longest segment's default (above it, since
+  // it is horizontal) wins outright, exactly as the pre-F59 fixed offset did.
+  bcase('clean-horizontal-default', [{ x: 300, y: 400 }, { x: 500, y: 400 }, { x: 500, y: 300 }], 'Clean Label');
+  // A vertical run whose start-anchored (+12) side runs into a box immediately
+  // to its right: the end-anchored (-12) side is clear and wins.
+  bcase('vertical-start-blocked-by-box', [{ x: 400, y: 300 }, { x: 400, y: 400 }, { x: 500, y: 400 }],
+    'Vertical Label', [], [{ x: 405, y: 340, w: 190, h: 112 }]);
+  // Two equal-length horizontal segments: the tie goes to the earlier one, as
+  // longestSegmentMid's own '>' comparison would; a box only over the second
+  // segment cannot change that when the first is already clean.
+  bcase('tie-break-keeps-earlier-segment',
+    [{ x: 100, y: 300 }, { x: 200, y: 300 }, { x: 200, y: 260 }, { x: 300, y: 260 }], 'Tie Segment',
+    [], [{ x: 190, y: 230, w: 100, h: 60 }]);
+  // A wide label whose fixed-offset default would overlap an ICOM code
+  // exactly where 'Customer Order'/I1 used to: the fix moves it, rather than
+  // accepting glyphs the code garbles.
+  bcase('icom-collision-avoided',
+    [{ x: 40, y: 244 }, { x: 70, y: 244 }, { x: 70, y: 228 }, { x: 100, y: 228 }], 'Customer Order',
+    [{ x: 28, y: 233, w: 11, h: 12 }], []);
+  // Every candidate collides with something: the frame penalty (3) outweighs
+  // a box penalty (1), so the end-anchored candidate — off the frame, over a
+  // box — wins over the start-anchored one that would run off the sheet, the
+  // 'Finished Product' shape from the shipped sample.
+  bcase('all-candidates-collide-frame-outweighs-box',
+    [{ x: 1000, y: 591.2 }, { x: 1030, y: 591.2 }, { x: 1030, y: 629.6 }, { x: 1060, y: 629.6 }], 'Finished Product',
+    [{ x: 1061.164, y: 618.6, w: 10.836, h: 12 }], [{ x: 810, y: 552, w: 190, h: 112 }]);
+  // An ICOM penalty (2) still outweighs a box penalty (1): the longest
+  // segment's own default (above it) collides with the ICOM band and is
+  // passed over for the same segment's other side (below it), which only
+  // collides with the box — even though every other candidate collides with
+  // the box too, so nothing here wins by being the sole clean option.
+  bcase('icom-penalty-outweighs-box',
+    [{ x: 300, y: 300 }, { x: 400, y: 300 }, { x: 400, y: 340 }, { x: 500, y: 340 }], 'Weighted Label',
+    [{ x: 280, y: 281, w: 240, h: 16 }], [{ x: 280, y: 300, w: 240, h: 60 }]);
+  // A long label near the right edge whose start-anchored default (running
+  // rightward, off the sheet) would cross the frame: the end-anchored side
+  // of the same vertical run, running back over the drawing area, is clear.
+  bcase('long-label-clamped-inside-frame',
+    [{ x: 1000, y: 500 }, { x: 1030, y: 500 }, { x: 1030, y: 600 }, { x: 1060, y: 600 }],
+    'A Rather Long Descriptive Arrow Label');
+  await post('golden-labels.json', JSON.stringify({ diagrams: labelDiagrams, dragged: draggedCases, battery }));
+
+  /* ---------------- squiggles (F66): a manually placed label far enough
+   * from its route gets a short zig-zag back to it; one close enough — or
+   * still auto-placed, which is always close enough — gets none. */
+  const squiggleCases = [];
+  const scase = (name, pts, pos, text) => {
+    const width = U.textWidth(text, 10.5);
+    squiggleCases.push({
+      name, pts, pos, width, nearest: G.nearestPointOnPolyline(pts, pos), squiggle: G.squigglePoints(pts, pos, width),
+    });
+  };
+  const straightPts = [{ x: 200, y: 200 }, { x: 400, y: 200 }, { x: 400, y: 350 }];
+  // Exactly at the threshold: the test is strictly '>', so still no squiggle.
+  scase('at-threshold-no-squiggle', straightPts, { x: 300, y: 182, anchor: 'middle' }, 'At Threshold');
+  // Comfortably inside it.
+  scase('close-no-squiggle', straightPts, { x: 300, y: 195, anchor: 'middle' }, 'Close Label');
+  // One unit past the threshold: a squiggle appears.
+  scase('just-over-threshold-squiggle', straightPts, { x: 300, y: 181, anchor: 'middle' }, 'Just Over');
+  // Far off in an arbitrary direction, past the label's own width too.
+  scase('far-diagonal-squiggle', straightPts, { x: 520, y: 420, anchor: 'start' }, 'Far Diagonal Label');
+  // The auto-placed spot for an ordinary label never needs one.
+  scase('auto-placed-no-squiggle', straightPts, G.labelPlacement(straightPts, 'Ordinary Label'), 'Ordinary Label');
+  await post('golden-squiggles.json', JSON.stringify(squiggleCases));
+
+  /* ---------------- util batteries ---------------- */
+  const nums = [0, 1, -1, 0.1, 0.2, 0.3, 0.33, 0.66, 1 / 3, 2 / 3, 96.5, 100, 100.5, 1e21, 1e20, 123456789012345680000, 1e-6, 1e-7, 0.000001234, 1.5e-7, 5e-324, 1.7976931348623157e308, 2.5, -2.5, 3.5, -3.5, 0.5, -0.5, 0.49999999999999994, 1023.9999999999999, 9007199254740993, 4.35, 1.005, 12.345, 0.15, 0.25, 0.35, 1234.5678, 437.5, 358, 571.25, 88.8, 2 / 7, Math.PI, Math.E, 1e15, 1e16, 1e17, 123e-20, 0.1 + 0.2, 100 / 3, 700.0000000000001, -0.05, -1.25, 1e-5, 12345678.9];
+  for (let i = 0; i < 300; i += 1) { nums.push((rnd(i) - 0.3) * 1100); nums.push((rnd(i + 999) - 0.5) * 1e-3); nums.push(Math.round(rnd(i + 7) * 1e6) / 1e3); }
+  const numbers = nums.map((v) => ({ v, s: String(v), r10: Math.round(v * 10) / 10, round: Math.round(v) }));
+  const strs = ['Plan Production', '  spaced  out  ', 'tab\tnew\nline', 'quote " and \\ backslash', '<a & b>', "it's", 'émigré café', '日本語のラベル', 'emoji 🙂 ok', 'ctrl', 'A/B', '', 'x'.repeat(70), 'Hello, World! 2026 -- Model #1', '---leading', 'trailing---', 'Ünïcödé Tïtle', 'a'.repeat(59) + '-b' + 'c'.repeat(10), ' nbsp ', '﻿bom', 'Manufacture Product'];
+  const strings = strs.map((s) => ({ s, json: JSON.stringify(s), xml: U.escapeXml(s), slug: U.slugify(s), trim: s.trim(), collapsed: s.trim().replace(/\s+/g, ' ').toLowerCase() }));
+  // F62: the shared Helvetica advance-width measure, exercised on capitals
+  // (which the old 0.54-em-per-character guess badly under-measured), a
+  // hyphenated compound (broken at the hyphen, not mid-word), a name that
+  // fills exactly four lines with nothing left over, and a name only a
+  // minimum-size box's width (BOX_MIN.w - 22 = 88) and height (BOX_MIN.h = 70,
+  // maxLines 3) can hold at all.
+  const texts = ['Manufacture Product', 'Estimate Requirements, Time, Cost to Produce', 'Supercalifragilisticexpialidocious activity name', 'a b c d e f g h i j k l m n o p q r s t u v w x y z', '', 'Plan', 'Make and Administer Schedules and Budgets for the Whole Plant Floor', 'MEASUREMENTS', 'Internationalisation-Compliance Review Committee', 'aaa bbbb ccc dddd eee ffff ggg hhhh'];
+  const wraps = [];
+  for (const t of texts) for (const w of [60, 88, 120, 168, 278]) for (const fs of [10.5, 13]) for (const ml of [2, 3, 4]) wraps.push({ t, w, fs, ml, lines: U.wrapText(t, w, fs, ml) });
+  const terms = ['Assemble Product', 'Assembled Product', 'assemble product', 'Components', 'components', 'Customer Order', 'Émigré', 'Zebra', 'apple', 'Apple', 'Work Order', 'Work order', 'A-1', 'A1', 'a b', 'ab', '10 Items', '9 Items', 'Production Schedule', 'Production Staff'];
+  // Pinned to en-US (F24), matching concepts.js's glossary sort and Swift's
+  // jsLocaleCompare, so this golden is the same on every machine regardless
+  // of the browser's own UI language.
+  const locale = [];
+  for (const a of terms) for (const b of terms) locale.push([a, b, Math.sign(a.localeCompare(b, 'en-US'))]);
+  // F63: fitText at the sheet form's own fixed cell widths (AUTHOR, DATE,
+  // PROJECT, REV, NODE, TITLE, NUMBER), each at the font size that field is
+  // drawn in, over values from empty to well past the cell.
+  const fitTexts = ['A. Modeller', 'Plant Operations Baseline', 'Manufacture Product', 'A0', '', 'x'.repeat(40), 'A Considerably Longer Author Name Than Any Cell Can Hold'];
+  const fitWidths = [102, 140, 170, 174, 188, 690];
+  const fits = [];
+  for (const t of fitTexts) for (const w of fitWidths) for (const fs of [10.5, 13]) fits.push({ t, w, fs, s: U.fitText(t, w, fs) });
+  await post('golden-util.json', JSON.stringify({ numbers, strings, wraps, fits, locale, sortedTerms: [...terms].sort((a, b) => a.localeCompare(b, 'en-US')) }));
+
+  /* ---------------- exports ---------------- */
+  const base = load();
+  const md = R.toMarkdown(base).replace(/_Generated by IDEF0 Modeler on \d{4}-\d{2}-\d{2}\._/, '_Generated by IDEF0 Modeler on DATE._');
+  const xml = X.toXml(base);
+  const reimported = normalize(J.serialize(C.bindAll(X.fromXml(xml))));
+
+  // F12: a v2 write/read round trip through data version 1 never carried —
+  // refs, diagram notes (one holding a CR), a full-precision fractional
+  // coordinate, and unknown top-level model/glossary members — proving none
+  // of it is lost any more.
+  const rich = load();
+  const richCtx = M.contextDiagram(rich);
+  richCtx.notes = [{ text: 'Line1\rLine2', author: 'Ada' }];
+  richCtx.boxes[0].refs = 'SOP-17, Appendix B';
+  richCtx.boxes[0].x = 100.123;
+  rich.ontologyLinks = ['urn:x', 'urn:y'];
+  rich.glossary[0].source = 'ISO 9001';
+  const xmlRich = X.toXml(rich);
+  const reimportedRich = normalize(J.serialize(C.bindAll(X.fromXml(xmlRich))));
+
+  // F12: an old file — no version attribute — reads exactly as version 1
+  // always did, even where it happens to carry the shapes version 2 writes:
+  // titleLocked stays derived from the title, refs and notes stay empty, the
+  // <extensions> element is ignored, and text stays trimmed.
+  const v1LegacyXml = '<idef0Model xmlns="urn:idef0-modeler:xml:1" id="mdl_v1">'
+    + '<header><title>  Padded Title  </title></header>'
+    + '<glossary><term id="gl_v1" name="Term" kind="data">  Def  </term></glossary>'
+    + '<diagrams><diagram id="dg_v1" node="A-0" context="true"><title>  Ctx  </title>'
+    + '<activities><activity id="bx_v1" number="1"><name>  Boxy  </name><refs>SOP-1</refs></activity></activities>'
+    + '<notes>[{"text":"should be ignored"}]</notes></diagram></diagrams>'
+    + '<extensions>{"model":{"ontologyLinks":["ignored"]}}</extensions>'
+    + '<root diagram="dg_v1"/></idef0Model>';
+  const v1LegacyFile = J.serialize(X.fromXml(v1LegacyXml));
+
+  // F12: version="2" reads text untrimmed and restores titleLocked (even
+  // overriding what the title would otherwise derive), refs, notes and
+  // extensions.
+  const v2ExplicitXml = '<idef0Model xmlns="urn:idef0-modeler:xml:1" version="2" id="mdl_v2">'
+    + '<header><title>  Padded  </title></header>'
+    + '<glossary><term id="g1" name="Term" kind="data">Def</term></glossary>'
+    + '<diagrams><diagram id="dg_v2" node="A-0" context="true" titleLocked="false"><title>Has Title</title>'
+    + '<activities><activity id="bx_v2" number="1"><name>Box</name><refs>  SOP-9  </refs></activity></activities>'
+    + '<notes>[{"text":"line1\\nline2"}]</notes></diagram></diagrams>'
+    + '<extensions>{"model":{"ontologyLinks":["urn:z"]},"glossary":{"g1":{"source":"ISO"}}}</extensions>'
+    + '<root diagram="dg_v2"/></idef0Model>';
+  const v2ExplicitFile = J.serialize(X.fromXml(v2ExplicitXml));
+
+  // S01: a version-2 file whose <term> carries <member> children reads them
+  // as the bundle's members — one with no id names nothing and is skipped,
+  // one naming no <term> is kept as a dangling reference — and the writer
+  // puts them back on the term's own line, after the definition text. The
+  // same file with no version attribute reads as version 1: no members.
+  const memberXml = '<idef0Model xmlns="urn:idef0-modeler:xml:1" version="2" id="mdl_mb">'
+    + '<header><title>Bundled</title></header>'
+    + '<glossary><term id="g1" name="Customer Order" kind="data">An order</term>'
+    + '<term id="g2" name="Raw Materials" kind="data"/>'
+    + '<term id="gb" name="Inputs" kind="data">Both<member id="g1"/><member/><member id=""/><member id="g2"/><member id="g_gone"/></term>'
+    + '</glossary>'
+    + '<diagrams><diagram id="dg_mb" node="A-0" context="true"><title>Bundled</title></diagram></diagrams>'
+    + '<root diagram="dg_mb"/></idef0Model>';
+  const memberModel = X.fromXml(memberXml);
+  const memberFile = J.serialize(memberModel);
+  const memberWritten = X.toXml(memberModel);
+  const v1MemberXml = memberXml.replace(' version="2"', '');
+  const v1MemberFile = J.serialize(X.fromXml(v1MemberXml));
+  // A hand-formatted file with the <member/> children on their own lines: the
+  // whitespace between them is not part of the definition, which is read from
+  // the term's own text nodes only.
+  const memberXmlPretty = memberXml.replace(
+    '>Both<member id="g1"/><member/><member id=""/><member id="g2"/><member id="g_gone"/></term>',
+    '>Both\n      <member id="g1"/>\n      <member id="g2"/>\n    </term>',
+  );
+  const memberFilePretty = J.serialize(X.fromXml(memberXmlPretty));
+
+  // S01: the sample with two inputs combined, through XML and back — the
+  // bundle survives the round trip as a glossary entry with members, and the
+  // codes it shares are the same on both sides of it.
+  const bundled = load();
+  C.combineConcepts(bundled, ['Customer Order', 'Raw Materials'].map((t) => C.findConcept(bundled, t).id), 'Inputs');
+  const xmlBundled = normalize(X.toXml(bundled));
+  const reimportedBundled = normalize(J.serialize(C.bindAll(X.fromXml(X.toXml(bundled)))));
+
+  // F21: XML 1.0-forbidden control characters (U+000B here) are replaced with
+  // U+FFFD on export rather than emitted raw, tab/newline survive inside an
+  // attribute (a glossary term name) via character references, and a literal
+  // CR in text content is escaped so it is not lost to line-ending
+  // normalisation on the way back in — so the exported file always parses.
+  const ctrl = load();
+  const ctrlCtx = M.contextDiagram(ctrl);
+  // Vertical tab (0x0B) and SOH (0x01): XML 1.0-forbidden control characters.
+  ctrlCtx.boxes[0].note = 'a' + String.fromCharCode(11) + 'b' + String.fromCharCode(1) + 'c';
+  ctrlCtx.arrows[0].label = 'CR\rHere';
+  ctrl.glossary[0].term = 'Tab\tNL\nEnd';
+  const xmlCtrl = X.toXml(ctrl);
+  let ctrlReadError = null;
+  let reimportedCtrl = null;
+  try { reimportedCtrl = normalize(J.serialize(C.bindAll(X.fromXml(xmlCtrl)))); } catch (e) { ctrlReadError = String(e.message || e); }
+
+  // F25: a quote, a backslash and a newline in quoted IDL fields no longer
+  // break the statement they sit in.
+  const idlModel = load();
+  const idlCtx = M.contextDiagram(idlModel);
+  idlModel.title = 'Model "Q"\\Path';
+  idlModel.author = 'A\nB';
+  idlCtx.arrows[0].label = 'Order "rush"\nline2';
+  idlCtx.boxes[0].name = 'Do "x"\\y';
+  const idlEscaped = X.toIdl(idlModel);
+
+  // The writer always emits version="2" now (titleLocked included), which
+  // moved the one hand-written parity case that reads then re-writes a file —
+  // an activity endpoint naming no activity — off its old version="1" shape.
+  const noIdXml = '<idef0Model><diagrams><diagram id="d1" node="A0"><activities><activity id="bx_s" number="1"/></activities><arrows><arrow id="ar_s"><source type="activity" side="right" position="0.2"/><destination type="boundary" side="right" position="0.4"/></arrow></arrows></diagram></diagrams></idef0Model>';
+  const noIdModel = X.fromXml(noIdXml);
+  const noIdFile = normalize(J.serialize(noIdModel));
+  const noIdWritten = normalize(X.toXml(noIdModel));
+  const noIdIdl = normalize(X.toIdl(noIdModel));
+
+  await post('golden-exports.json', JSON.stringify({
+    xml, idl: X.toIdl(base), markdown: md, reimported,
+    xmlRich, reimportedRich, v1LegacyXml, v1LegacyFile, v2ExplicitXml, v2ExplicitFile,
+    xmlCtrl, ctrlReadError, reimportedCtrl, idlEscaped,
+    noIdXml, noIdFile, noIdWritten, noIdIdl,
+    memberXml, memberFile, memberWritten, v1MemberXml, v1MemberFile, memberXmlPretty, memberFilePretty, xmlBundled, reimportedBundled,
+  }));
+
+  /* ---------------- deserialize repairs ---------------- */
+  const hdr = '"id":"m1","created":"2020-01-01","revised":"2020-01-02"';
+  const inputs = [
+    `{${hdr},"rootDiagramId":"d1","diagrams":{"d1":{"id":"zzz","node":"A-0","boxes":[{"id":"b","name":"Do It","x":null,"number":"3","w":"150"}],"arrows":[{"id":"a","label":"Thing","from":null,"to":{"type":"box","boxId":"b","side":"top","pos":"0.25"},"bend":7,"tunnelFrom":1,"ldx":"2.5"}]}}}`,
+    `{${hdr},"rootDiagramId":"d1","diagrams":{"d1":{"node":"A-0","title":"Named"},"d2":{"node":"A0","title":"Kept","titleLocked":false},"d3":{"node":"A1","title":"","titleLocked":null},"d4":{"title":"   "}}}`,
+    `{${hdr},"rootDiagramId":"d1","extra":{"k":[1,2,{"z":null}]},"5":"five","glossary":[{"id":"g1","term":"T","kind":"custom","definition":"D","source":"xyz"}],"diagrams":{"d1":{"node":"A-0"}},"zlast":true}`,
+    `{${hdr},"rootDiagramId":"d1","glossary":{"not":"array"},"diagrams":{"d1":{}}}`,
+    `{${hdr},"rootDiagramId":"d1","diagrams":{"d1":{"arrows":[{"id":"a1","from":{"type":"boundary","side":"bottom","pos":0.9},"to":{"type":"box","side":"right"}},{"id":"a2","from":[],"to":"str"},{"id":"a3","from":{"type":"box","boxId":"q","pos":null},"to":{"type":"BOX","side":"left","pos":0.1}}]}}}`,
+    `{${hdr},"title":"Tab\\tQuote\\" \\u00e9 \\ud83d\\ude42 /slash","rootDiagramId":"d1","diagrams":{"d1":{"node":"A-0","title":"<&>"}}}`,
+    `{${hdr},"author":42,"project":true,"rootDiagramId":"d1","diagrams":{"d1":{"cNumber":7,"boxes":[{"id":"b","name":0,"number":0}]}}}`,
+    // Append new cases below: the Swift test skips case 6 by position.
+    // 7: members this version does not model, on diagrams, boxes and arrows (kept, after the known ones,
+    //    array-index keys first) and on endpoints (dropped); non-object diagrams and boxes carry none.
+    `{${hdr},"rootDiagramId":"d1","diagrams":{"d1":{"iri":"urn:d1","node":"A-0","5":"five","boxes":[{"id":"b1","iri":"urn:b1","name":"Do","prov":{"src":["x",1]},"10":true,"__proto__":{"p":1}},"str",[1,2]],"arrows":[{"id":"a1","cost":3.5,"from":{"type":"box","boxId":"b1","side":"right","pos":0.5,"iri":"urn:end"},"to":{"type":"boundary","boxId":"b1","side":"right","pos":0.5,"iri":"urn:end2"},"iri":"urn:a1","7":null}]},"d2":[1,2],"d3":"text","d4":5,"d5":{"id":"ignored","zz":0,"notes":["n"]}}}`,
+    // 8: glossary entries, boxes and arrows without ids (absent or null) get fresh ones, reported as repairs;
+    //    non-object glossary entries are dropped; missing definitions and terms read as ''.
+    `{${hdr},"rootDiagramId":"d1","glossary":[{"term":"No Id"},"loose",null,{"id":null,"term":null,"kind":null,"definition":null},{"id":7,"term":3,"kind":"input"},{"id":"g2","term":"Kept","src":"x"}],"diagrams":{"d1":{"node":"A0","boxes":[{"name":"Idless"},{"id":null,"name":"Null Id"},null,{"id":"b3","name":"Has Id"}],"arrows":[{"label":"Idless","from":{"type":"box","side":"right"},"to":{"type":"box","boxId":"b3","side":"left","pos":0.5}},{"id":null,"label":"Null Id"},7,{"id":"a3"}]}}}`,
+    // 9: a file without dates keeps them empty.
+    `{"id":"m1","rootDiagramId":"d1","diagrams":{"d1":{"node":"A-0"}}}`,
+    // 10: null dates read as empty too.
+    `{"id":"m1","created":null,"revised":null,"rootDiagramId":"d1","diagrams":{"d1":{"node":"A-0"}}}`,
+    // 11: a box endpoint naming no box always writes "boxId": null.
+    `{${hdr},"rootDiagramId":"d1","diagrams":{"d1":{"arrows":[{"id":"a1","from":{"type":"box","boxId":null,"side":"right","pos":0.5},"to":{"type":"box","side":"left","pos":0.25}}]}}}`,
+  ];
+  const errors = ['not json', 'null', '[]', '5', '"str"', '{}', '{"diagrams":{},"rootDiagramId":"x"}', '{"diagrams":1,"rootDiagramId":"x"}', '{"diagrams":{"x":{}},"rootDiagramId":""}',
+    '{"diagrams":{"x":null},"rootDiagramId":"x"}'];
+  // Generated ids are random, so they are normalised (new1, new2… in order of appearance, separately in
+  // the file and in the repairs); `repairs` is recorded only where there are some.
+  const cases = inputs.map((text) => {
+    try {
+      const repairs = [];
+      const out = normalize(J.serialize(J.deserialize(text, { repairs })));
+      return repairs.length ? { text, out, repairs: normalize(repairs.join('\n')).split('\n') } : { text, out };
+    } catch (e) { return { text, error: e.message }; }
+  });
+  const errs = errors.map((text) => { try { J.deserialize(text); return { text, error: null }; } catch (e) { return { text, error: e.message }; } });
+  await post('golden-deserialize.json', JSON.stringify({ cases, errors: errs }, null, 2));
+
+  /* ---------------- render parity (F67, S01) ----------------
+   * Text/path/rect/circle ops per diagram of the sample, plus five
+   * purpose-built models exercising an unnamed box, a tunnelled arrow, a mix
+   * of one manually moved label and the rest auto-placed, a title too long
+   * for its frame cell, a child diagram with ports, a bundle, and forks and
+   * joins (S02) — compared
+   * against SheetDrawing.build's own ops (RenderParityTests.swift). Built
+   * directly on a cloned diagram, the same way the 'dragged' label cases
+   * above are, rather than through the scenario op DSL, since ldx/ldy and a
+   * long title have no op of their own. Styling (fill/stroke/dash/italic) is
+   * deliberately not recorded — that is where the documented macOS rendering
+   * deviations live. */
+  const renderStyleEl = document.createElement('style');
+  renderStyleEl.textContent = RN.EXPORT_CSS;
+  document.head.appendChild(renderStyleEl);
+  const renderHost = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  renderHost.setAttribute('style', 'position:absolute;left:-99999px;top:-99999px');
+  document.body.appendChild(renderHost);
+
+  // Attributes alone do not say which role (sheet/box/arrow/arrowLabel/icom/
+  // port) an element belongs to — `renderDiagram`'s own grouping does: a
+  // `.frame-layer` ancestor is the sheet form, a `data-box` ancestor is that
+  // box, a `data-port` ancestor is that port (S01: its stub, ring, code and
+  // label alike — the code's own 'icom' class does not make it an arrow's),
+  // a `.arrow[data-arrow]` ancestor is that arrow's strokes, and a
+  // `.arrow-annotations[data-arrow]` ancestor is that arrow's label/squiggle
+  // or (if the element's own class says 'icom') its ICOM code.
+  const classifyRenderRole = (el) => {
+    let n = el.parentNode;
+    while (n && n.nodeType === 1) {
+      if (n.classList?.contains('frame-layer')) return { role: 'sheet', id: null };
+      if (n.hasAttribute?.('data-box')) return { role: 'box', id: n.getAttribute('data-box') };
+      if (n.hasAttribute?.('data-port')) return { role: 'port', id: n.getAttribute('data-port') };
+      if (n.classList?.contains('arrow') && n.hasAttribute('data-arrow')) return { role: 'arrow', id: n.getAttribute('data-arrow') };
+      if (n.classList?.contains('arrow-annotations') && n.hasAttribute('data-arrow')) {
+        const own = el.getAttribute('class') || '';
+        return { role: own.includes('icom') ? 'icom' : 'arrowLabel', id: n.getAttribute('data-arrow') };
+      }
+      n = n.parentNode;
+    }
+    return { role: 'sheet', id: null };
+  };
+
+  // `<line>` frame gridlines are deliberately excluded — SheetDrawing.build
+  // keeps them as a separate DrawOp case this golden does not record either.
+  // A `<circle>` (S01: a port's ring) records its centre and radius, the
+  // shape of SheetDrawing's `.circle` op.
+  const collectRenderOps = (el, ops) => {
+    for (const child of Array.from(el.childNodes)) {
+      if (child.nodeType !== 1) { continue; }
+      const tag = child.tagName;
+      if (tag === 'text' || tag === 'path' || tag === 'rect' || tag === 'circle') {
+        const { role, id } = classifyRenderRole(child);
+        if (tag === 'text') {
+          const cs = getComputedStyle(child);
+          ops.push({
+            role, id, tag, text: child.textContent,
+            x: Number(child.getAttribute('x')), y: Number(child.getAttribute('y')),
+            anchor: cs.textAnchor || 'start',
+          });
+        } else if (tag === 'path') {
+          ops.push({ role, id, tag, d: child.getAttribute('d') });
+        } else if (tag === 'circle') {
+          ops.push({
+            role, id, tag,
+            cx: Number(child.getAttribute('cx')), cy: Number(child.getAttribute('cy')), r: Number(child.getAttribute('r')),
+          });
+        } else {
+          ops.push({
+            role, id, tag,
+            x: Number(child.getAttribute('x')), y: Number(child.getAttribute('y')),
+            w: Number(child.getAttribute('width')), h: Number(child.getAttribute('height')),
+          });
+        }
+      }
+      collectRenderOps(child, ops);
+    }
+  };
+
+  const renderOpsFor = (model, dg) => {
+    renderHost.textContent = '';
+    const g = RN.renderDiagram(model, dg, { forExport: true });
+    renderHost.appendChild(g);
+    const ops = [];
+    collectRenderOps(g, ops);
+    renderHost.removeChild(g);
+    return ops;
+  };
+
+  const renderModelCase = (name, model) => {
+    const diagrams = {};
+    for (const dg of Object.values(model.diagrams)) diagrams[dg.node] = renderOpsFor(model, dg);
+    return { name, diagrams };
+  };
+
+  const renderCases = [renderModelCase('sample', load())];
+
+  // An unnamed box, a tunnelled arrow, and a mix of one manually moved label
+  // (ldx/ldy) and the rest auto-placed.
+  {
+    const m = load();
+    const dg = byNode(m, 'A0');
+    dg.boxes.push({ id: 'bx_rndunnamed', name: '', number: dg.boxes.length + 1, conceptId: null, x: 700, y: 150, w: 120, h: 80, childDiagramId: null, note: '', refs: '' });
+    arrowByLabel(dg, 'Raw Materials').tunnelFrom = true;
+    const moved = arrowByLabel(dg, 'Customer Order');
+    moved.ldx = 90; moved.ldy = 60;
+    renderCases.push(renderModelCase('render-mixed', m));
+  }
+
+  // A title too long for its NODE/TITLE cell — fitText must shrink it to an
+  // ellipsis rather than overprint its neighbour — on the context diagram,
+  // which also draws the PURPOSE/VIEWPOINT statement, each long enough here
+  // to wrap across both of its two lines.
+  {
+    const m = load();
+    const longTitle = 'A Considerably Longer Diagram Title Than the NODE/TITLE Cell Can Hold — And Then Some More Words Piled On Top, Just To Be Certain It Overflows The Cell.';
+    m.title = longTitle;
+    const ctx = byNode(m, 'A-0');
+    ctx.title = longTitle;
+    ctx.titleLocked = true;
+    m.purpose = 'To describe, at considerably greater length than the two-line PURPOSE band on the printed form can show without wrapping its text across more than a single visual row, exactly how and why this particular model is meant to be read, interpreted and acted upon by everyone downstream who consults it later.';
+    m.viewpoint = 'From the perspective of a reader who arrives with no prior context whatsoever and who still needs the whole picture in a single unhurried pass through the sheet, reading it line by patiently wrapped line from top to bottom.';
+    renderCases.push(renderModelCase('render-long-title', m));
+  }
+
+  // S01 ports: Plan Production decomposed and nothing connected on the
+  // child, so it draws a port per parent ICOM entry (I1, C1, O1) — a dashed
+  // stub, an open ring, the code at the edge and the label beside the ring.
+  // The child's fresh box ids are random in both apps, so both give them
+  // the same fixed spelling (no arrow refers to them).
+  {
+    const m = load();
+    H.apply(m, { op: 'decompose', diagram: 'A0', name: 'Plan Production', count: 3 });
+    byNode(m, 'A1').boxes.forEach((b, i) => { b.id = 'bx_rndp' + (i + 1); });
+    renderCases.push(renderModelCase('render-ports', m));
+  }
+
+  // S01 bundles: Customer Order and Raw Materials combined into "Inputs" —
+  // on A-0 the pair runs between the same faces and draws once, labelled
+  // with the bundle's term (Raw Materials draws nothing); on A0 the two
+  // branches reach different boxes and each draws alone, keeping its own
+  // specific label (FIPS 183 §3.2.2.3: the general label on the bundle, the
+  // specific ones on its branches).
+  {
+    const m = load();
+    C.combineConcepts(m, ['Customer Order', 'Raw Materials'].map((t) => C.findConcept(m, t).id), 'Inputs');
+    renderCases.push(renderModelCase('render-bundle', m));
+  }
+
+  // S02 forks and joins: the 'fork-join-drawn' scenario's model — the
+  // sample's three Work Orders forking off Plan Production, two Inspection
+  // Reports joining at Ship Product's top, and a Customer Order copy forking
+  // off the left edge — each group drawn as one trunk with branches and one
+  // label, checked against SheetDrawing.build op for op.
+  {
+    const m = load();
+    for (const op of H.scenarios.find((sc) => sc.name === 'fork-join-drawn').ops) H.apply(m, op);
+    renderCases.push(renderModelCase('render-fork-join', m));
+  }
+
+  await post('golden-render.json', JSON.stringify(renderCases));
+
+  const idempotent = J.serialize(load()) === sampleText;
+  say(`\nDone. JS idempotent on the sample: ${idempotent}`, idempotent ? 'ok' : 'err');
+  // F86: a non-idempotent serialize is a lossless-round-trip failure — a
+  // data-integrity property, for a tool whose whole job is data integrity —
+  // and it used to still post '/__done/ok'. Throwing sends it to '/__done/error'
+  // instead, so regen-goldens.sh exits non-zero rather than reporting success.
+  if (!idempotent) throw new Error('serialize(load()) is not idempotent on the sample; see F86');
+  await fetch('/__done/ok', { method: 'POST', body: `idempotent=${idempotent}` });
+} catch (e) {
+  say(String(e.stack || e), 'err');
+  await fetch('/__done/error', { method: 'POST', body: String(e.stack || e) });
+}
+</script>
