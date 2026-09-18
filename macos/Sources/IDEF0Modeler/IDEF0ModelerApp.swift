@@ -13,6 +13,14 @@ struct IDEF0ModelerApp: App {
     // preference, not something the file format or either app depends on.
     @AppStorage("ui-kit.race") private var race: SCRace = .steel
 
+    init() {
+        // A document app with nothing to reopen shows the Open panel at launch
+        // by default; a modeller should open on a blank sheet instead, like
+        // the web app does. AppKit reads this default before the first
+        // document is created, so it must be set here, not in a delegate.
+        UserDefaults.standard.register(defaults: ["NSShowAppCentricOpenPanelInsteadOfUntitledFile": false])
+    }
+
     var body: some Scene {
         DocumentGroup(newDocument: { IDEF0Document() }) { file in
             EditorWindow(document: file.document)
