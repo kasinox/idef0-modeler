@@ -284,6 +284,14 @@ macos/                 native macOS app, `idef0` CLI and Swift port of src/model
                        and src/io — see macos/README.md
   scripts/golden-harness.js   shared plumbing behind regen-goldens.sh's headless
                               fixture capture (below)
+ui-kit/                vendored copy of the shared UI kit (theme tokens, CSS,
+                       theme picker, fonts) so a clone runs with no build step
+                       and no npm install; the kit's own copy script owns what
+                       lands here and records the source in ui-kit/COPY.md —
+                       edit the kit, not this folder
+scripts/vendor-ui-kit.sh    refreshes that copy, and the Mac target's
+                            SCTheme.swift, from ../ui-kit; `--check` fails when
+                            either has drifted, and runs from build-app.sh
 ```
 
 `render.js` is used unchanged by the exporters, so what you see on screen is
