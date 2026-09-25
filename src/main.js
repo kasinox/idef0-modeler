@@ -13,6 +13,7 @@ import { confirmDialog, modalOpen } from './ui/dialog.js';
 import { deserialize } from './io/json.js';
 import { fromXml } from './io/idef0xml.js';
 import { findBoxAnywhere, findBox } from './model/model.js';
+import { initPortal } from './portal.js';
 
 /* ------------------------------------------------------------------ tabs */
 
@@ -167,6 +168,9 @@ initCanvas();
 (async function start() {
   renderAll();          // draw the shell before any dialog blocks on the user
   renderCanvas();
+  // Off the Portal this resolves to null and changes nothing; under it the bar
+  // is in place before the restore dialog, so the shell never jumps.
+  await initPortal();
   const saved = readAutosave();
   if (saved?.model) {
     const when = new Date(saved.at).toLocaleString();

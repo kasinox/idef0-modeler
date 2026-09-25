@@ -53,7 +53,7 @@ always draws to the plain, FIPS-accurate appearance, regardless of palette.
 
 The palette itself lives in `Sources/IDEF0Modeler/SCTheme.swift`, a generated
 copy of the kit's own Swift tokens rather than a hand-written file: refresh it
-(and the web app's vendored `ui-kit/`) with `scripts/vendor-ui-kit.sh` from the
+(and the web app's vendored `ui-kit/` and `sync-kit/`) with `scripts/vendor-kits.sh` from the
 repository root when the kit changes. `build-app.sh` runs that script's
 `--check` first and refuses to build a bundle whose theme has drifted from the
 kit; a clone with no kit checked out beside it skips the check.

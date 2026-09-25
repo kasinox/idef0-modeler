@@ -16,9 +16,9 @@ APP="$OUT/IDEF0 Modeler.app"
 VERSION="${VERSION:-1.0}"
 
 # The bundle compiles the kit's SCTheme.swift and ships its fonts, so a stale
-# vendored copy would ship a stale theme. The check skips itself when the kit
-# is not checked out beside this repo, which is the normal case for a clone.
-"$HERE/../../scripts/vendor-ui-kit.sh" --check
+# vendored copy would ship a stale theme. The check skips a kit that is not
+# checked out beside this repo, which is the normal case for a clone.
+"$HERE/../../scripts/vendor-kits.sh" --check
 
 swift build --package-path "$PKG" -c "$CONFIG" --product IDEF0Modeler
 BIN_DIR="$(swift build --package-path "$PKG" -c "$CONFIG" --show-bin-path)"

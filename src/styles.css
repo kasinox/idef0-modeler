@@ -187,3 +187,8 @@ html[data-sc]{--box:var(--sc-panel-2,#111c27)}
 .ghost{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:5 4;pointer-events:none}
 .bendh{fill:var(--accent);opacity:.8;cursor:move}
 .dropzone{fill:var(--accent);opacity:.08;stroke:var(--accent);stroke-dasharray:6 4;stroke-width:1.2}
+
+/* The Portal's bar, mounted at the top of #app by src/portal.js when the page
+   is served under the Portal. A plain flex item: it takes its own height and
+   the shell below keeps the rest of the viewport. Absent off the Portal. */
+#app > sc-portal-bar{flex:0 0 auto}

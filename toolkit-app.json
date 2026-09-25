@@ -1,0 +1,14 @@
+{
+  "id": "idef0",
+  "name": "IDEF0 Modeler",
+  "mark": "A0",
+  "colorToken": "idef0",
+  "workspace": "idef0",
+  "static": { "dir": ".", "build": null, "include": ["index.html", "src/**", "ui-kit/css/**", "ui-kit/fonts/**", "ui-kit/js/**",
+    "ui-kit/adapters/**", "sync-kit/js/**"] },
+  "entry": "index.html",
+  "offline": true,
+  "csp": null,
+  "connectScheme": "idef0",
+  "pwa": { "shortName": "IDEF0", "themeColor": "#03060A", "display": "standalone" }
+}
