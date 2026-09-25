@@ -14,6 +14,7 @@ import { deserialize } from './io/json.js';
 import { fromXml } from './io/idef0xml.js';
 import { findBoxAnywhere, findBox } from './model/model.js';
 import { initPortal } from './portal.js';
+import { initPersistence } from './state/persistence.js';
 
 /* ------------------------------------------------------------------ tabs */
 
@@ -171,6 +172,10 @@ initCanvas();
   // Off the Portal this resolves to null and changes nothing; under it the bar
   // is in place before the restore dialog, so the shell never jumps.
   await initPortal();
+  // Asked for, never waited on: whether the browser will keep the autosave is
+  // worth knowing but worth nothing at all if it delays the first paint. The
+  // Model panel shows "Checking…" until this lands and redraws it.
+  initPersistence(() => renderModelProps());
   const saved = readAutosave();
   if (saved?.model) {
     const when = new Date(saved.at).toLocaleString();

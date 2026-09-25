@@ -8,6 +8,7 @@ import {
 } from '../model/model.js';
 import { renameBox, labelArrow, setModelTitle } from '../model/edits.js';
 import { store, set, commit, currentDiagram, goToDiagram } from '../state/store.js';
+import { persistenceState, persistenceAdvice } from '../state/persistence.js';
 import { renderCanvas } from './canvas.js';
 import { confirmDialog, promptNumber, promptText } from './dialog.js';
 import {
@@ -144,7 +145,30 @@ export function renderModelProps() {
     // Depth in the decomposition tree (A-0 = 0, A0 = 1, A1 = 2, A11 = 3), as the
     // Mac shows it; a diagram the tree does not reach does not count.
     stat('Deepest level', Math.max(0, ...diagramTree(m).map((n) => n.depth))),
+
+    el('h3', { class: 'sect', text: 'This browser' }),
+    ...storageRows(),
   );
+}
+
+/**
+ * Whether the browser has promised to keep the autosaved copy of this model,
+ * and what to do when it has not (S04).
+ *
+ * The state arrives asynchronously and the panel is rebuilt when it does, so
+ * "checking…" is what a first paint shows rather than a wrong answer.
+ */
+function storageRows() {
+  const { state } = persistenceState();
+  const label = { persisted: 'Persisted', 'at-risk': 'At risk', unknown: 'Checking…' }[state];
+  const badge = { persisted: 'ok', 'at-risk': 'warning', unknown: '' }[state];
+  const advice = persistenceAdvice(state);
+  return [
+    el('div', { class: 'kv' },
+      el('span', { text: 'Autosaved copy' }),
+      el('span', { class: `badge ${badge}`.trim(), text: label })),
+    ...(advice ? [el('div', { class: 'mnote', text: advice })] : []),
+  ];
 }
 
 const stat = (k, v) => el('div', { class: 'kv' }, el('span', { text: k }), el('span', { class: 'mono', text: String(v) }));

@@ -130,7 +130,14 @@ parent/child consistency check.
 | Pan / zoom | drag the background, scroll; ⌘0 fits the sheet |
 
 Unsaved work is autosaved to this browser's local storage and offered back on
-the next visit.
+the next visit. A browser only keeps that copy if it has agreed to: by default
+site storage is best-effort and can be evicted when the disk runs short, so on
+launch the app asks for persistent storage and the Model panel's **This
+browser** section reports the answer — *Persisted*, or *At risk* with the one
+thing that changes it (install the app from the browser's menu; on iPhone add
+it to the Home Screen). Nothing waits on that question, and a browser too old
+to be asked is simply not asked. The file you save is still the copy that
+outlives any browser.
 
 ### Activities are laid out for you
 
@@ -293,6 +300,8 @@ toolkit-app.json       the Portal contract: what this app is called, which
                        files it ships and which sync workspace it uses
 src/portal.js          mounts the Portal's bar when the page is served under
                        the Portal; inert everywhere else
+src/state/persistence.js    asks the browser to keep this app's data, and
+                            reports whether it agreed
 scripts/vendor-kits.sh      refreshes both copies, and the Mac target's
                             SCTheme.swift, from ../ui-kit and ../sync-kit;
                             `--check` fails on drift and runs from build-app.sh
